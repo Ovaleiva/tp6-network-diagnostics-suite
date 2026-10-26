@@ -1,0 +1,4 @@
+# Hoisted facilita la resolución de dependencias de las herramientas nativas.
+nodeLinker: hoisted
+storeDir: .pnpm-store
+cacheDir: .pnpm-cache
