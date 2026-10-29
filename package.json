@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
+    "android": "node scripts/android.cjs run",
     "ios": "react-native run-ios",
     "lint": "eslint App.tsx index.js src __tests__ scripts *.config.js jest.setup.js --ext .js,.ts,.tsx,.cjs",
     "start": "react-native start",
@@ -11,10 +11,19 @@
     "typecheck": "tsc --noEmit",
     "format:check": "prettier --check App.tsx src __tests__ scripts",
     "bundle:android": "node scripts/bundle-android.cjs",
-    "doctor:android": "node scripts/check-android.cjs",
+    "doctor:android": "node scripts/android.cjs doctor",
     "verify": "npm run typecheck && npm run lint && npm test -- --runInBand && npm run bundle:android",
+    "android:env": "node scripts/android.cjs env",
     "lab:snmp": "node scripts/snmp-lab.cjs",
     "test:snmp-lab": "node --test scripts/snmp-lab.test.cjs"
+  },
+  "codegenConfig": {
+    "name": "NetworkDiscoverySpec",
+    "type": "modules",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "com.networkdiagnosticssuite"
+    }
   },
   "dependencies": {
     "react": "19.3.0",

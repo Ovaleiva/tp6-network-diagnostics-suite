@@ -1,5 +1,14 @@
 # Entorno Windows y Android
 
+## Actualización: herramientas instaladas
+
+JDK 17 y Android Studio ya están instalados. El SDK definitivo está en
+C:/Android/Sdk y el emulador se llama TP6_Pixel_API36. Consultar
+[Ejecutar en el emulador](EMULADOR.md) para el procedimiento actual.
+
+La plataforma se instala como platforms;android-37.0 y Gradle utiliza compileSdk 37.
+El estado inicial que sigue se conserva como registro histórico.
+
 ## Estado detectado al crear el proyecto
 
 - Node 22.19.0 y npm 11.6.2.
@@ -18,7 +27,7 @@ Java 8 no sirve para compilar esta plantilla. Instalar JDK 17 y Android Studio.
 1. Instalar JDK 17 y configurar JAVA_HOME apuntando a su carpeta, no a bin.
    Agregar %JAVA_HOME%\\bin a PATH y reabrir la terminal.
 2. Instalar Android Studio. En SDK Manager instalar las versiones que pide
-   android/build.gradle: SDK Platform 37, Build Tools 37.0.0 y NDK 27.1.12297006.
+   android/build.gradle: SDK Platform 37.0 (paquete platforms;android-37.0), Build Tools 37.0.0 y NDK 27.1.12297006.
    Instalar Platform Tools y Command-line Tools. Aceptar licencias.
 3. Definir ANDROID_HOME con la ruta real del SDK; habitualmente
    C:\\Users\\54344\\AppData\\Local\\Android\\Sdk. Agregar su platform-tools a PATH.
@@ -78,4 +87,4 @@ que incluya el bundle (por ejemplo assembleRelease, tras revisar firma/configura
 La plantilla firma release con el keystore de debug. Eso permite un APK de prueba,
 pero no es una configuración de distribución de producción. En la etapa final,
 revisar firma, generar APK con JavaScript incluido, instalarlo y comprobar arranque
-con Metro apagado y modo avión. No se generó un APK en la etapa 1.
+con Metro apagado y modo avión. Ya se generó un APK debug x86_64 durante la preparación del emulador; requiere Metro.

@@ -72,18 +72,46 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+def nativeTestRunners = [
+    discovery: "com.networkdiagnosticssuite.DiscoveryInstrumentation",
+    udp: "com.networkdiagnosticssuite.UdpTransportInstrumentation",
+]
+def nativeTestSuite = providers.gradleProperty("tp6TestSuite").orElse("discovery").get()
+if (!nativeTestRunners.containsKey(nativeTestSuite)) {
+    throw new GradleException("Invalid tp6TestSuite '${nativeTestSuite}'. Expected discovery or udp.")
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.networkdiagnosticssuite"
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/jni/CMakeLists.txt"
+        }
+    }
+
+    // Ninja en Windows limita la longitud de los nombres de archivos objeto.
+    // Una ruta corta de cache permite compilar proyectos ubicados en Documentos.
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+        externalNativeBuild {
+            cmake {
+                buildStagingDirectory file(
+                    "${System.getProperty('user.home')}/.cache/tp6-cxx/${Integer.toHexString(rootDir.absolutePath.hashCode())}"
+                )
+            }
+        }
+    }
     defaultConfig {
         applicationId "com.networkdiagnosticssuite"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner nativeTestRunners[nativeTestSuite]
     }
     signingConfigs {
         debug {
