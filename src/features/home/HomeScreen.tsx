@@ -11,48 +11,56 @@ const modules: ReadonlyArray<{
   title: string;
   description: string;
   requirement: string;
+  status: string;
 }> = [
   {
     route: 'Devices',
     title: 'Equipos en la red',
     description: 'Descubrimiento de dispositivos en la LAN.',
     requirement: 'RF-01',
+    status: 'BÚSQUEDA mDNS · RF-01 PARCIAL',
   },
   {
     route: 'Diagnostics',
     title: 'Diagnóstico',
     description: 'Consulta SNMPv2c de laboratorio. SSH pendiente.',
     requirement: 'RF-02 / RF-03',
+    status: 'SNMP EN LABORATORIO · SSH PENDIENTE',
   },
   {
     route: 'Identification',
     title: 'Identificar equipo',
     description: 'Lectura QR o barras y ficha técnica.',
     requirement: 'RF-04',
+    status: 'PENDIENTE DE IMPLEMENTACIÓN',
   },
   {
     route: 'Installation',
     title: 'Instalación',
     description: 'Fotos, coordenadas y notas de la visita.',
     requirement: 'RF-05',
+    status: 'FOTOS, GPS Y NOTAS SIN CONEXIÓN',
   },
   {
     route: 'Reports',
     title: 'Reportes',
     description: 'Documentación de instalaciones en PDF.',
     requirement: 'RF-06',
+    status: 'PENDIENTE DE IMPLEMENTACIÓN',
   },
   {
     route: 'Sync',
     title: 'Sincronización',
     description: 'Acciones pendientes de envío al backend.',
     requirement: 'RF-07',
+    status: 'PENDIENTE DE IMPLEMENTACIÓN',
   },
   {
     route: 'History',
     title: 'Historial',
     description: 'Diagnósticos por equipo o sitio sin Internet.',
     requirement: 'RF-08',
+    status: 'PENDIENTE DE IMPLEMENTACIÓN',
   },
 ];
 
@@ -70,13 +78,12 @@ export function HomeScreen({
       </Text>
       <View style={styles.notice}>
         <Text style={styles.noticeTitle}>
-          En desarrollo · mDNS y laboratorio SNMP
+          En desarrollo · mDNS, SNMP e instalaciones
         </Text>
         <Text style={styles.description}>
-          Equipos en la red busca servicios mDNS y Diagnóstico permite consultar
-          SNMP. Identificación, SSH, instalaciones, PDF, sincronización e
-          historial todavía están pendientes. La suite completa aún no está
-          implementada.
+          Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP e
+          Instalación registra fotos, GPS y notas sin conexión. Identificación,
+          SSH, PDF, sincronización e historial todavía están pendientes.
         </Text>
       </View>
       {modules.map(module => (
@@ -89,13 +96,7 @@ export function HomeScreen({
           style={({ pressed }) => [styles.card, pressed && styles.pressed]}
         >
           <Text style={styles.requirement}>{module.requirement}</Text>
-          <Text style={styles.requirement}>
-            {module.route === 'Devices'
-              ? 'BÚSQUEDA mDNS · RF-01 PARCIAL'
-              : module.route === 'Diagnostics'
-              ? 'SNMP EN LABORATORIO · SSH PENDIENTE'
-              : 'PENDIENTE DE IMPLEMENTACIÓN'}
-          </Text>
+          <Text style={styles.requirement}>{module.status}</Text>
           <Text style={styles.title}>{module.title}</Text>
           <Text style={styles.description}>{module.description}</Text>
         </Pressable>

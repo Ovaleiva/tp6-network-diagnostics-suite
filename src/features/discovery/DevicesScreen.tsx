@@ -10,12 +10,19 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../app/navigation/routes';
 import type { DiscoveryResult, LanInfo } from './contracts';
 import { androidDiscovery } from '../../infrastructure/discovery/androidDiscovery';
+import { LOCAL_SITE_ID } from '../../core/domain/models';
+import type { LocalRepository } from '../local-store/contracts';
+import { useRepository } from '../local-store/useRepository';
 import { Screen } from '../../shared/components/Screen';
 import { colors } from '../../shared/theme';
 
-export function DevicesScreen({
-  navigation,
-}: NativeStackScreenProps<RootStackParamList, 'Devices'>) {
+type Props = NativeStackScreenProps<RootStackParamList, 'Devices'> & {
+  // Se inyecta en pruebas; en la app se abre la base SQLite.
+  repository?: LocalRepository;
+};
+
+export function DevicesScreen({ navigation, repository: injected }: Props) {
+  const getRepository = useRepository(injected);
   const [network, setNetwork] = useState<LanInfo>();
   const [result, setResult] = useState<DiscoveryResult>();
   const [busy, setBusy] = useState(false);
@@ -41,6 +48,18 @@ export function DevicesScreen({
     };
   }, []);
 
+  // Los equipos quedan disponibles sin conexión para el historial (RF-08).
+  async function saveDevices(devices: DiscoveryResult['devices']) {
+    if (!devices.length) return '';
+    try {
+      const repository = await getRepository();
+      await repository.saveDevices(devices);
+      return 'Guardados en el dispositivo.';
+    } catch {
+      return 'No se pudieron guardar en el dispositivo.';
+    }
+  }
+
   async function scan() {
     if (running.current) {
       return;
@@ -51,9 +70,10 @@ export function DevicesScreen({
     setMessage('Buscando servicios anunciados en la red durante 12 segundos…');
     try {
       const scanResult = await androidDiscovery.discover({
-        siteId: 'sitio-local',
+        siteId: LOCAL_SITE_ID,
         timeoutMs: 12000,
       });
+      const saved = await saveDevices(scanResult.devices);
       if (!mounted.current) {
         return;
       }
@@ -61,7 +81,7 @@ export function DevicesScreen({
       setResult(scanResult);
       setMessage(
         scanResult.devices.length
-          ? `Búsqueda terminada: ${scanResult.devices.length} equipo(s) con servicios mDNS.`
+          ? `Búsqueda terminada: ${scanResult.devices.length} equipo(s) con servicios mDNS. ${saved}`
           : 'No se encontraron servicios mDNS. Esto no significa que la red no tenga equipos.',
       );
     } catch (error) {

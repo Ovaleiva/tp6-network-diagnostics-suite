@@ -5,12 +5,21 @@ import type { RootStackParamList } from '../../app/navigation/routes';
 import { Screen } from '../../shared/components/Screen';
 import { colors } from '../../shared/theme';
 import { androidSnmp } from '../../infrastructure/protocols/androidSnmp';
+import { LOCAL_SITE_ID } from '../../core/domain/models';
+import { createOutboxAction } from '../../core/sync/outboxAction';
+import type { LocalRepository } from '../local-store/contracts';
+import { useRepository } from '../local-store/useRepository';
 import type { SnmpDiagnostic } from './contracts';
 
-export function DiagnosticsScreen({
-  route,
-}: NativeStackScreenProps<RootStackParamList, 'Diagnostics'>) {
+type Props = NativeStackScreenProps<RootStackParamList, 'Diagnostics'> & {
+  // Se inyecta en pruebas; en la app se abre la base SQLite.
+  repository?: LocalRepository;
+};
+
+export function DiagnosticsScreen({ route, repository: injected }: Props) {
   const selected = route.params;
+  const getRepository = useRepository(injected);
+  const [saveStatus, setSaveStatus] = useState('');
   const [ip, setIp] = useState(selected?.ip || '10.0.2.2');
   const [port, setPort] = useState(selected?.ip ? '161' : '1161');
   const [community, setCommunity] = useState(selected?.ip ? '' : 'public');
@@ -35,6 +44,7 @@ export function DiagnosticsScreen({
     setBusy(true);
     setError('');
     setResult(undefined);
+    setSaveStatus('');
     try {
       if (
         ![port, interfaceIndex, timeout].every(value => /^\d+$/.test(value))
@@ -46,7 +56,7 @@ export function DiagnosticsScreen({
       const diagnostic = await androidSnmp.readBasicStatus(
         {
           id: selected?.deviceId || `manual:${ip.trim()}`,
-          siteId: 'local',
+          siteId: selected?.siteId || LOCAL_SITE_ID,
           ip: ip.trim(),
           discoveryMethod: 'manual',
           discoveredAt: new Date().toISOString(),
@@ -59,6 +69,7 @@ export function DiagnosticsScreen({
         },
       );
       if (mounted.current) setResult(diagnostic.snmp);
+      await save(diagnostic);
     } catch (failure) {
       if (mounted.current)
         setError(
@@ -70,6 +81,21 @@ export function DiagnosticsScreen({
       running.current = false;
       if (mounted.current) setBusy(false);
     }
+  }
+
+  // Solo se guardan consultas exitosas; la comunidad no forma parte del diagnóstico.
+  async function save(diagnostic: SnmpDiagnostic) {
+    let message = 'Guardado en el dispositivo. Queda en cola para sincronizar.';
+    try {
+      const repository = await getRepository();
+      await repository.saveDiagnosticWithAction(
+        diagnostic,
+        createOutboxAction('diagnostic.upsert', diagnostic.id, 1, new Date()),
+      );
+    } catch {
+      message = 'No se pudo guardar el resultado en el dispositivo.';
+    }
+    if (mounted.current) setSaveStatus(message);
   }
 
   const fields = [
@@ -172,11 +198,12 @@ export function DiagnosticsScreen({
           <Text style={styles.body}>
             Contadores Counter32; no representan una tasa de transferencia.
           </Text>
+          {!!saveStatus && <Text style={styles.body}>{saveStatus}</Text>}
         </View>
       )}
       <Text style={styles.body}>
-        RF-02 en validación de laboratorio. SSH (RF-03), persistencia e
-        historial siguen pendientes.
+        RF-02 en validación de laboratorio. SSH (RF-03) y la pantalla de
+        historial (RF-08) siguen pendientes.
       </Text>
     </Screen>
   );

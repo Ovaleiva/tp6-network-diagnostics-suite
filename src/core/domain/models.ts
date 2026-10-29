@@ -2,6 +2,9 @@
 export type EntityId = string;
 export type IsoDate = string;
 
+// Sitio usado mientras la app no permite elegir uno; agrupa equipos y diagnósticos.
+export const LOCAL_SITE_ID: EntityId = 'sitio-local';
+
 export interface Device {
   id: EntityId;
   siteId: EntityId;

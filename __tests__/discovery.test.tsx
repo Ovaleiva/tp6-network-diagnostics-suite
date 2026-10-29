@@ -36,10 +36,12 @@ afterAll(() => {
 jest.useFakeTimers();
 let app: ReactTestRenderer.ReactTestRenderer;
 const navigate = jest.fn();
+const repository = { saveDevices: jest.fn() };
 
 beforeEach(() => {
   jest.clearAllMocks();
   native.getNetworkInfo.mockResolvedValue(network);
+  repository.saveDevices.mockResolvedValue(undefined);
 });
 afterEach(async () => {
   if (app) {
@@ -53,6 +55,7 @@ async function render() {
       <DevicesScreen
         navigation={{ navigate } as never}
         route={{ key: 'devices', name: 'Devices' }}
+        repository={repository as never}
       />,
     );
   });
@@ -117,6 +120,21 @@ test('una búsqueda vacía termina y muestra su alcance; no agrega equipos ficti
   expect(contents()).toContain('No se encontraron servicios mDNS');
   expect(contents()).toContain('red virtual del emulador');
   expect(button('Buscar equipos').props.disabled).toBe(false);
+  expect(repository.saveDevices).not.toHaveBeenCalled();
+});
+
+test('guarda en el dispositivo los equipos encontrados', async () => {
+  native.discover.mockResolvedValue({ network, warnings: [], services: [service] });
+  await render();
+  await act(async () => {
+    await button('Buscar equipos').props.onPress();
+  });
+  expect(repository.saveDevices).toHaveBeenCalledTimes(1);
+  const [devices] = repository.saveDevices.mock.calls[0];
+  expect(devices).toEqual([
+    expect.objectContaining({ ip: '192.168.1.20', siteId: 'sitio-local' }),
+  ]);
+  expect(contents()).toContain('1 equipo(s)');
 });
 
 test('el error de red queda visible y permite volver a intentar', async () => {

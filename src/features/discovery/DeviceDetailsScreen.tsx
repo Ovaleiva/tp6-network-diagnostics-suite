@@ -38,6 +38,7 @@ export function DeviceDetailsScreen({
           navigation.navigate('Diagnostics', {
             deviceId: device.id,
             ip: device.ip,
+            siteId: device.siteId,
           })
         }
         style={styles.card}

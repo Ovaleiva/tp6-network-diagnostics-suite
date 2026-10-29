@@ -16,11 +16,22 @@ function wrap(executor: OpExecutor) {
   };
 }
 
-let repository: ReturnType<typeof createSqliteRepository> | null = null;
+let opening: ReturnType<typeof openRepository> | null = null;
 
 // Abre la base una sola vez por proceso y aplica migraciones pendientes.
-export async function getRepository() {
-  if (repository) return repository;
+// Se guarda la promesa para que dos pantallas que piden la base a la vez
+// compartan la misma apertura; si falla, el próximo pedido reintenta.
+export function getRepository() {
+  if (!opening) {
+    opening = openRepository();
+    opening.catch(() => {
+      opening = null;
+    });
+  }
+  return opening;
+}
+
+async function openRepository() {
   const raw = open({ name: 'network-diagnostics.db' });
   const db: SqlDatabase = {
     ...wrap(raw),
@@ -29,7 +40,7 @@ export async function getRepository() {
   };
   await db.execute('PRAGMA foreign_keys = ON');
   await migrate(db);
-  repository = createSqliteRepository(db);
+  const repository = createSqliteRepository(db);
   await repository.recoverInterrupted();
   return repository;
 }

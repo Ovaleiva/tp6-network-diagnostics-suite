@@ -3,6 +3,10 @@
 Contexto para continuar el TP6 en otra sesión (por ejemplo, Claude Code).
 Leer también README.md, docs/ALCANCE.md y docs/ARQUITECTURA.md.
 
+El proyecto se trabaja en C:/dev/tp6. La ruta anterior, dentro de Documents,
+superaba el límite de 260 caracteres del Ninja del SDK al compilar Nitro
+(ver docs/EMULADOR.md, "Ajuste de rutas para Windows").
+
 ## Estado verificado antes de estos cambios
 
 - Typecheck OK. Tests: 40/40 OK (App, discovery, snmp-screen, snmp-codec, snmp-client).
@@ -31,7 +35,7 @@ Decisión: SQLite con `@op-engineering/op-sqlite` en lugar de WatermelonDB
 - `__tests__/local-store.test.ts`: 8 pruebas con `node:sqlite` real. PASARON.
 - Paquete instalado y typecheck OK.
 
-## Paso 2 — Instalación con fotos, GPS y notas, RF05 (HECHO, falta probar en emulador)
+## Paso 2 — Instalación con fotos, GPS y notas, RF05 (HECHO y probado en emulador)
 
 - `src/core/ids.ts`: ids locales.
 - `src/features/evidence/installationDraft.ts`: lógica pura (validación, fotos,
@@ -64,16 +68,29 @@ Decisión: SQLite con `@op-engineering/op-sqlite` en lugar de WatermelonDB
 
 `npm.cmd run verify` OK (typecheck, lint, 53/53 pruebas, bundle Android).
 
-### Pendiente
+### Prueba en emulador (29/10, HECHA)
 
-`npm run android` en emulador: compilar nativo (Nitro agrega C++), tomar una foto y
-probar el GPS simulado.
+Compilación nativa OK (15 min la primera vez). Con GPS simulado
+(`adb emu geo fix -64.1888 -31.4201`) se tomaron dos fotos: la primera, antes
+del GPS, quedó "sin GPS"; la segunda quedó georreferenciada. Al guardar, la base
+del dispositivo tenía la instalación (revisión 1) y la acción
+`installation.upsert` pendiente; los JPEG quedaron en `files/evidence`.
 
-## Detalle pendiente detectado
+Con adb, el obturador necesita una pulsación (`input swipe x y x y 150`);
+`input tap` no lo dispara en el emulador cargado.
 
-- El diagnóstico SNMP todavía no se guarda en la base. Hay que persistirlo con
-  `saveDiagnosticWithAction` (kind `diagnostic.upsert`) para que aparezca en RF08.
-- Guardar los equipos descubiertos con `saveDevices`.
+## Paso 3 — Guardar diagnósticos y equipos (HECHO)
+
+- Diagnóstico guarda cada consulta SNMP exitosa con `saveDiagnosticWithAction`
+  (kind `diagnostic.upsert`, revisión 1). La comunidad no se guarda. Las
+  consultas fallidas o canceladas no se guardan.
+- Equipos guarda lo descubierto con `saveDevices`.
+- Sitio unificado `LOCAL_SITE_ID = 'sitio-local'` (antes Diagnóstico usaba
+  `'local'`). Diagnóstico recibe el `siteId` del equipo seleccionado.
+- `src/core/sync/outboxAction.ts`: creación compartida de acciones de la cola.
+- `src/features/local-store/useRepository.ts`: abre la base o usa la inyectada.
+- `getRepository()` comparte la apertura entre pantallas simultáneas.
+- Pendiente de probar en emulador.
 
 ## Plan restante
 

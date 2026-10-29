@@ -97,10 +97,20 @@ Confirmar primero el identificador con adb devices si hay más de un emulador.
   Sincronización e Historial.
 - Atrás de Android vuelve a Inicio.
 - El contenido permite desplazarse cuando no entra en pantalla.
-- Las pantallas indican claramente que las funciones están pendientes.
+- Instalación pide permisos de ubicación y cámara, toma fotos, obtiene el GPS
+  simulado y guarda la instalación con su acción pendiente en la cola.
+- Diagnóstico guarda cada consulta SNMP exitosa; Equipos guarda los equipos
+  encontrados.
+- Las pantallas pendientes (Identificación, Reportes, Sincronización e
+  Historial) lo indican claramente.
 
-Los protocolos SNMP/SSH, la base local, cámara/GPS, PDF y sincronización todavía
-no se implementaron. Esta prueba verifica la estructura y navegación nativa.
+Para simular la ubicación del emulador:
+
+```powershell
+adb -s emulator-5554 emu geo fix -64.1888 -31.4201
+```
+
+El orden es longitud y luego latitud.
 
 ## Ajuste de rutas para Windows
 
@@ -108,6 +118,26 @@ La primera compilación encontró rutas de archivos C++ mayores a 260 caracteres
 android/app/build.gradle configura un buildStagingDirectory corto bajo
 la caché del usuario (.cache/tp6-cxx), con un identificador para este checkout.
 Así Ninja puede generar sus archivos objeto dentro de los límites de Windows.
+
+Ese ajuste solo cubre el módulo app. Las librerías con C++ propio, como
+react-native-nitro-image, compilan dentro de node_modules. Con el proyecto en
+una carpeta profunda la compilación falla con:
+
+```text
+ninja: error: manifest 'build.ninja' still dirty after 100 tries
+```
+
+El Ninja 1.10.2 del SDK no admite rutas largas aunque Windows tenga
+LongPathsEnabled activo. Por eso el proyecto se trabaja en una ruta corta,
+C:/dev/tp6.
+
+Si `npm.cmd run android` responde que `"gradlew.bat" no se reconoce`, la terminal
+tiene definida la variable NoDefaultCurrentDirectoryInExePath. Quitarla antes de
+compilar:
+
+```powershell
+Remove-Item Env:NoDefaultCurrentDirectoryInExePath
+```
 
 El diagnóstico también reconoce la carpeta platforms/android-37.0 que publica Google.
 

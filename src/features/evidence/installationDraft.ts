@@ -5,6 +5,7 @@ import type {
   PhotoEvidence,
 } from '../../core/domain/models';
 import { newId } from '../../core/ids';
+import { createOutboxAction } from '../../core/sync/outboxAction';
 
 export const MAX_PHOTOS = 10;
 export const MAX_NOTES = 2000;
@@ -101,14 +102,11 @@ export function toInstallation(
   };
   return {
     installation,
-    action: {
-      id: newId('act', now.getTime()),
-      entityId: installation.id,
-      entityRevision: revision,
-      kind: 'installation.upsert',
-      state: 'pending',
-      attempts: 0,
-      createdAt: now.toISOString(),
-    },
+    action: createOutboxAction(
+      'installation.upsert',
+      installation.id,
+      revision,
+      now,
+    ),
   };
 }

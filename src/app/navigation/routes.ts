@@ -5,7 +5,7 @@ export type RootStackParamList = {
   Home: undefined;
   Devices: undefined;
   DeviceDetails: { device: Device };
-  Diagnostics: { deviceId: string; ip?: string } | undefined;
+  Diagnostics: { deviceId: string; ip?: string; siteId?: string } | undefined;
   Identification: undefined;
   Installation:
     | { deviceId?: string; siteId?: string; capturedPhotoPath?: string }
