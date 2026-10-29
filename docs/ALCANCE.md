@@ -20,8 +20,15 @@ el backend recibe los cambios cuando vuelve a ser accesible.
 | RF07 | Operación offline y sincronización diferida | Pantalla Sync, modelo outbox y contrato local transaccional | Cerrar app con cola pendiente, reabrir y sincronizar sin duplicados |
 | RF08 | Historial por equipo/sitio sin Internet | Pantalla Historial y consulta del repositorio | Filtrar y consultar en modo avión |
 
-Todos los requisitos siguen **pendientes de implementación funcional** al terminar
-esta etapa. Disponer de un tipo o una pantalla no demuestra que un requisito funciona.
+Al terminar la etapa 1 todos los requisitos estaban pendientes de implementación
+funcional. La etapa 2 incorpora descubrimiento mDNS nativo, listado por IP y detalle;
+RF01 sigue parcial por la validación en LAN externa y la MAC. La etapa 3 implementa
+GetRequest/Response SNMPv2c, sysName, uptime y contadores de una interfaz explícita,
+con un agente controlado de PC. RF02 está en validación de laboratorio; falta
+la prueba sobre un equipo de red físico. RF03–RF08 siguen pendientes.
+Disponer de un tipo o una pantalla no demuestra que un requisito funciona.
+El descubrimiento también conserva el hostname resuelto que NSD devuelve en
+Android API 36+; en versiones anteriores o sin respuesta se muestra no disponible.
 
 ## Etapas propuestas
 

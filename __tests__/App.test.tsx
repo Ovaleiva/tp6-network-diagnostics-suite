@@ -3,6 +3,20 @@ import ReactTestRenderer, { act } from 'react-test-renderer';
 import App from '../App';
 import { HomeScreen } from '../src/features/home/HomeScreen';
 import { ModuleScreen } from '../src/shared/components/ModuleScreen';
+import { DevicesScreen } from '../src/features/discovery/DevicesScreen';
+import { DiagnosticsScreen } from '../src/features/protocols/DiagnosticsScreen';
+
+jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
+  __esModule: true,
+  default: {
+    getNetworkInfo: jest.fn().mockResolvedValue({
+      address: '10.0.2.16',
+      transport: 'Wi-Fi',
+      emulator: true,
+    }),
+    cancelDiscovery: jest.fn(),
+  },
+}));
 
 jest.useFakeTimers();
 
@@ -25,8 +39,6 @@ test('inicia en Inicio sin montar servicios ni pantallas de diagnóstico', () =>
 });
 
 test.each([
-  ['Equipos en la red', 'Equipos en la red', 'RF-01'],
-  ['Diagnóstico', 'Diagnóstico', 'RF-02 / RF-03'],
   ['Identificar equipo', 'Identificar equipo', 'RF-04'],
   ['Instalación', 'Instalación', 'RF-05'],
   ['Reportes', 'Reportes', 'RF-06'],
@@ -54,6 +66,20 @@ test.each([
   expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
 });
 
+test('Equipos abre la búsqueda funcional y permite volver a Inicio', async () => {
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.navigate('Devices');
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(DevicesScreen)).toHaveLength(1);
+  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.goBack();
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(DevicesScreen)).toHaveLength(0);
+});
+
 test('Diagnóstico recibe el identificador del equipo por la ruta', async () => {
   await act(async () => {
     app.root
@@ -61,7 +87,8 @@ test('Diagnóstico recibe el identificador del equipo por la ruta', async () => 
       .props.navigation.navigate('Diagnostics', { deviceId: 'equipo-prueba' });
     jest.runAllTimers();
   });
-  expect(app.root.findByType(ModuleScreen).props.emptyMessage).toBe(
-    'Equipo seleccionado: equipo-prueba',
-  );
+  expect(
+    app.root.findByType(DiagnosticsScreen).props.route.params.deviceId,
+  ).toBe('equipo-prueba');
+  expect(JSON.stringify(app.toJSON())).toContain('Consultar SNMP');
 });

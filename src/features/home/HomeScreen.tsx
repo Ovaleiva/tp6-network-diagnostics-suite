@@ -5,7 +5,7 @@ import type { RootStackParamList } from '../../app/navigation/routes';
 import { Screen } from '../../shared/components/Screen';
 import { colors } from '../../shared/theme';
 
-type Destination = Exclude<keyof RootStackParamList, 'Home'>;
+type Destination = Exclude<keyof RootStackParamList, 'Home' | 'DeviceDetails'>;
 const modules: ReadonlyArray<{
   route: Destination;
   title: string;
@@ -21,7 +21,7 @@ const modules: ReadonlyArray<{
   {
     route: 'Diagnostics',
     title: 'Diagnóstico',
-    description: 'Consultas SNMP y comandos SSH predefinidos.',
+    description: 'Consulta SNMPv2c de laboratorio. SSH pendiente.',
     requirement: 'RF-02 / RF-03',
   },
   {
@@ -69,10 +69,14 @@ export function HomeScreen({
         Diagnosticar, documentar y sincronizar.
       </Text>
       <View style={styles.notice}>
-        <Text style={styles.noticeTitle}>Etapa 1 · Estructura inicial</Text>
+        <Text style={styles.noticeTitle}>
+          En desarrollo · mDNS y laboratorio SNMP
+        </Text>
         <Text style={styles.description}>
-          Podés recorrer las pantallas. Las funciones de red y el almacenamiento
-          se agregarán en las próximas etapas.
+          Equipos en la red busca servicios mDNS y Diagnóstico permite consultar
+          SNMP. Identificación, SSH, instalaciones, PDF, sincronización e
+          historial todavía están pendientes. La suite completa aún no está
+          implementada.
         </Text>
       </View>
       {modules.map(module => (
@@ -85,6 +89,13 @@ export function HomeScreen({
           style={({ pressed }) => [styles.card, pressed && styles.pressed]}
         >
           <Text style={styles.requirement}>{module.requirement}</Text>
+          <Text style={styles.requirement}>
+            {module.route === 'Devices'
+              ? 'BÚSQUEDA mDNS · RF-01 PARCIAL'
+              : module.route === 'Diagnostics'
+              ? 'SNMP EN LABORATORIO · SSH PENDIENTE'
+              : 'PENDIENTE DE IMPLEMENTACIÓN'}
+          </Text>
           <Text style={styles.title}>{module.title}</Text>
           <Text style={styles.description}>{module.description}</Text>
         </Pressable>

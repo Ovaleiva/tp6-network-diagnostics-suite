@@ -1,8 +1,11 @@
 # TP6 · Network Diagnostics Suite
 
-Base de una aplicación React Native para técnicos de campo. Esta entrega corresponde
-a la **etapa 1: alcance, arquitectura y navegación**. No implementa todavía RF01–RF08:
-prepara sus pantallas, modelos y contratos. No se ejecutan escaneos ni consultas SNMP/SSH.
+Aplicación React Native para técnicos de campo, todavía en desarrollo.
+La etapa 1 preparó arquitectura y navegación. La etapa 2 agrega una **búsqueda mDNS
+nativa en Android**, con cancelación, resultados por IP y detalle de servicios.
+RF01 es parcial: falta validar un equipo externo de la LAN y resolver la exigencia
+de MAC. La etapa 3 agrega consultas SNMPv2c y un agente de laboratorio en la PC.
+RF02 está en validación de laboratorio; RF03–RF08 y la persistencia siguen pendientes.
 
 ## Empezar
 
@@ -32,12 +35,29 @@ npm start
 npm run android
 ```
 
-Consultar [preparación de Windows](docs/ENTORNO.md) antes de ejecutar Android.
+En esta PC seguir [ejecución en el emulador](docs/EMULADOR.md). Para una instalación nueva,
+consultar [preparación de Windows](docs/ENTORNO.md).
 La app no usa Expo Go.
+
+Para probar SNMP sin un teléfono físico, iniciar el agente en otra terminal:
+
+```powershell
+npm.cmd run lab:snmp
+```
+
+En la app abrir **Diagnóstico**, conservar `10.0.2.2:1161`, comunidad `public`
+e interfaz `1`, y pulsar **Consultar SNMP**. El agente responde como `TP6-LAB-PC`.
+Sus contadores son controlados; no miden una interfaz física de la PC.
+La [guía de etapa 3](docs/ETAPA_3_SNMP.md) explica el código, los OIDs y las pruebas.
+
+En Windows, los comandos android y doctor:android resuelven JDK 17 y el SDK
+aunque la terminal conserve el entorno anterior. Para ver las rutas y versiones
+elegidas ejecutar npm.cmd run android:env.
 
 ## Recorrido de lectura
 
 1. [Etapa 1 explicada, bloque por bloque](docs/ETAPA_1.md).
+   Continuar con [etapa 2: descubrimiento real y pruebas](docs/ETAPA_2.md).
 2. [Alcance y trazabilidad RF01–RF08](docs/ALCANCE.md).
 3. [Arquitectura y decisiones](docs/ARQUITECTURA.md).
 4. [Pruebas y estado real de la validación](docs/VERIFICACION.md).
@@ -61,7 +81,8 @@ src/
     local-store/           Contrato de persistencia local
     sync/                  RF07: cola y sincronización
     history/               RF08: consulta de historial
-  infrastructure/          Adaptadores nativos futuros
+  infrastructure/          Adaptador de descubrimiento Android
+  specs/                   Contrato TurboModule para Codegen
   shared/                  Componentes visuales y colores
 android/                   Proyecto nativo Android
 ios/                       Plantilla iOS; no validada en Windows

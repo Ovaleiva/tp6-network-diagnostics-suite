@@ -10,6 +10,7 @@ export interface Device {
   hostname?: string;
   discoveredAt: IsoDate;
   discoveryMethod: 'mdns' | 'tcp-probe' | 'manual';
+  services?: { name: string; type: string; port: number }[];
 }
 
 export interface Diagnostic {

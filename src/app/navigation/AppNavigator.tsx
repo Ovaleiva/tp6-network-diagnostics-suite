@@ -3,6 +3,7 @@ import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from '../../features/home/HomeScreen';
 import { DevicesScreen } from '../../features/discovery/DevicesScreen';
+import { DeviceDetailsScreen } from '../../features/discovery/DeviceDetailsScreen';
 import { DiagnosticsScreen } from '../../features/protocols/DiagnosticsScreen';
 import { IdentificationScreen } from '../../features/identification/IdentificationScreen';
 import { InstallationScreen } from '../../features/evidence/InstallationScreen';
@@ -42,6 +43,11 @@ export function AppNavigator() {
           name="Devices"
           component={DevicesScreen}
           options={{ title: 'Equipos en la red' }}
+        />
+        <Stack.Screen
+          name="DeviceDetails"
+          component={DeviceDetailsScreen}
+          options={{ title: 'Detalle del equipo' }}
         />
         <Stack.Screen
           name="Diagnostics"
