@@ -151,6 +151,9 @@ Confirmar primero el identificador con adb devices si hay más de un emulador.
 - Diagnóstico guarda cada consulta SNMP exitosa (verificado el 29/10); Equipos
   guarda los equipos encontrados. En el emulador la búsqueda mDNS vuelve vacía,
   por lo que el guardado de equipos requiere un teléfono físico en la LAN.
+- Diagnóstico SSH (con `npm.cmd run lab:ssh`) pide confirmar la huella la
+  primera vez, ejecuta uptime e interfaces y rechaza una huella cambiada.
+  Ver docs/TRASPASO.md, Paso 5.
 - Reportes genera el PDF de una instalación guardada y lo abre con el visor
   del sistema (en el emulador, el de Google Drive). Ver docs/TRASPASO.md, Paso 4.
 - Las pantallas pendientes (Identificación, Sincronización e Historial) lo

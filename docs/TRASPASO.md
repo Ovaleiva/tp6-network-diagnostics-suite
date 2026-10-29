@@ -172,11 +172,81 @@ En modo debug, la primera vez que se abre Reportes Metro arma el bloque diferido
 de pdf-lib (~800 módulos) y la pantalla muestra "Cargando instalaciones…"
 unos segundos.
 
+## Paso 5 — SSH con comandos predefinidos, RF03 (HECHO y probado en emulador)
+
+Decisiones (justificar en el informe):
+
+- **Módulo Kotlin propio con JSch 0.2.25** (`com.github.mwiede:jsch`, fork
+  mantenido) en lugar de `@dylankenneally/react-native-ssh-sftp` 1.11.0. Esa
+  biblioteca fija `StrictHostKeyChecking=no` (acepta cualquier servidor: un
+  intermediario podría quedarse con la contraseña), conecta sin timeout, usa
+  el puente viejo de módulos y JSch 0.2.17.
+- **Contraseña cifrada desde el módulo nativo**, sin react-native-keychain:
+  AES-256-GCM con una clave del Android Keystore (no exportable); la referencia
+  `ssh:<ip>:<puerto>` va como dato autenticado (AAD). En SharedPreferences
+  queda solo usuario, IV y texto cifrado (`allowBackup=false`). JavaScript
+  envía la contraseña una vez al guardarla y nunca la vuelve a leer; el módulo
+  la descifra al conectar y borra el arreglo después.
+- **Identidad del servidor (TOFU)**: la primera vez la app muestra la huella
+  SHA256 (formato OpenSSH) para compararla con la del equipo y el técnico la
+  confirma. Después solo se acepta esa huella. JSch la verifica durante el
+  intercambio de claves, **antes** de autenticar: si no coincide no se envía la
+  contraseña. Cambiarla exige "Olvidar huella guardada" explícitamente.
+- **Lista cerrada de comandos en Kotlin** (`SshCommands`): JavaScript envía
+  perfil + comando, nunca texto libre. Linux: `uptime`, `ip -brief address`.
+  Cisco IOS y RouterOS están definidos pero **sin probar** con equipos reales;
+  su salida se muestra sin interpretar.
+- **Laboratorio** `npm.cmd run lab:ssh` (`scripts/ssh-lab.cjs`, con `ssh2` como
+  devDependency): 127.0.0.1:2222, usuario `tecnico`, contraseña `laboratorio`,
+  solo `exec` de los dos comandos Linux con salidas simuladas; no ejecuta nada
+  en la PC. La clave del servidor queda en `tmp/ssh-lab/` (ignorado) para que
+  la huella no cambie; se imprime al iniciar. `pnpm-workspace.yaml` deja en
+  `false` los scripts de compilación de `ssh2`/`cpu-features` (no hacen falta).
+
+Archivos:
+
+- `android/.../SshSecurity.kt`: `SshCommands`, `SshCredentialStore`,
+  `SshKnownHosts` y `PinnedHostKeyRepository`.
+- `android/.../SshClientModule.kt` (`NativeSshClient`): `run`, `scanHostKey`,
+  `trustHostKey`, `forgetHostKey`, `saveCredential`, `credentialUser`,
+  `deleteCredential`, `cancel`. Un hilo por conexión, plazo total, salida
+  máxima 64 KB. Errores: `E_HOST_KEY_UNKNOWN`, `E_HOST_KEY_CHANGED`, `E_AUTH`,
+  `E_NO_CREDENTIAL`, `E_TIMEOUT`, `E_UNREACHABLE`, `E_CANCELLED`.
+- `src/features/protocols/sshDiagnostic.ts`: lógica pura (perfiles, uptime e
+  `ip -brief`, diagnóstico, traducción de errores).
+- `src/features/protocols/SshScreen.tsx` (ruta `SshDiagnostics`, se abre desde
+  Diagnóstico con el mismo equipo). Guarda con `saveDiagnosticWithAction`
+  solo los comandos con código 0; la salida guardada se recorta a 8000 caracteres.
+- Pruebas: `ssh-diagnostic.test.ts` (23), `ssh-screen.test.tsx` (9),
+  App (+1), `npm.cmd run test:ssh-lab` (6). Jest: 115/115.
+
+### Prueba en emulador (29/10, HECHA)
+
+Con `npm.cmd run lab:ssh` y la app en 10.0.2.2:2222:
+
+- Primera conexión: la app mostró `SHA256:Y+MBs6zJByxrpHcRsfM0oEfZ5u+BS6rmkuZVidYYSNk`,
+  idéntica a la del laboratorio. Con contraseña incorrecta: "Usuario o contraseña
+  incorrectos."
+- Con la correcta: uptime ("Encendido hace 6 min") e interfaces (lo, eth0,
+  wlan0) con código 0, guardados con su acción `diagnostic.upsert`
+  (`docs/evidencia/ssh-laboratorio-android.png`).
+- Laboratorio reiniciado con otra clave: "La huella del equipo no coincide…
+  no se envió la contraseña." "Olvidar huella" volvió a pedir confirmación con
+  la huella nueva; "No confiar" no ejecutó nada.
+- Laboratorio detenido: "No se pudo conectar: puerto cerrado o equipo inaccesible."
+- En el teléfono, `ssh_credentials.xml` contiene solo usuario, IV y texto
+  cifrado; ni `laboratorio` ni `incorrecta` aparecen en la base, la cola ni
+  las preferencias.
+
+Observación: una vez, tras ejecutar uptime y deslizar la pantalla enseguida, la
+interfaz siguió mostrando "Cancelar conexión" hasta el siguiente toque, aunque
+el diagnóstico ya estaba guardado. No se repitió en los intentos siguientes.
+
+**Pendiente:** probar con un equipo real (router Linux/OpenWrt, Cisco o
+MikroTik) en la LAN con un teléfono físico.
+
 ## Plan restante
 
-4. RF03 — SSH con comandos predefinidos (`uptime`, `interfaces`), credenciales en
-   Keystore (react-native-keychain). Nunca contraseñas en texto plano ni en la cola.
-   Evaluar módulo nativo propio con JSch si react-native-ssh-sftp no funciona en RN 0.88.
 5. RF04 — QR/barras con el code scanner de vision-camera; asociar a ficha técnica.
 6. RF07 — backend stub (ver backend/README.md) + servicio de sync con NetInfo:
    `listReadyActions` → `markSending` → enviar → `markSent` / `markFailed` /

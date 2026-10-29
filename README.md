@@ -7,8 +7,8 @@ RF01 es parcial: falta validar un equipo externo de la LAN y resolver la exigenc
 de MAC. La etapa 3 agrega consultas SNMPv2c y un agente de laboratorio en la PC.
 RF02 está en validación de laboratorio. Luego se agregaron la base local SQLite con
 cola de sincronización, el registro de instalaciones con fotos y GPS (RF05) y el PDF
-de instalación (RF06), probados en el emulador. RF03, RF04, RF07 y RF08 siguen
-pendientes. El estado detallado está en [el traspaso](docs/TRASPASO.md).
+de instalación (RF06) y SSH con comandos predefinidos (RF03, contra un servidor de
+laboratorio), probados en el emulador. RF04, RF07 y RF08 siguen pendientes. El estado detallado está en [el traspaso](docs/TRASPASO.md).
 
 ## Empezar
 
@@ -52,6 +52,17 @@ En la app abrir **Diagnóstico**, conservar `10.0.2.2:1161`, comunidad `public`
 e interfaz `1`, y pulsar **Consultar SNMP**. El agente responde como `TP6-LAB-PC`.
 Sus contadores son controlados; no miden una interfaz física de la PC.
 La [guía de etapa 3](docs/ETAPA_3_SNMP.md) explica el código, los OIDs y las pruebas.
+
+Para probar SSH, iniciar el servidor de laboratorio en otra terminal:
+
+```powershell
+npm.cmd run lab:ssh
+```
+
+Muestra la huella del servidor. En la app abrir **Diagnóstico → Diagnóstico SSH**,
+conservar `10.0.2.2:2222`, guardar la credencial `tecnico` / `laboratorio`,
+ejecutar un comando y comparar la huella antes de confiar. El laboratorio solo
+responde `uptime` e `ip -brief address` con salidas simuladas.
 
 En Windows, los comandos android y doctor:android resuelven JDK 17 y el SDK
 aunque la terminal conserve el entorno anterior. Para ver las rutas y versiones

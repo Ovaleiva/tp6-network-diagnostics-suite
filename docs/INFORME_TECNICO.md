@@ -19,12 +19,20 @@ No se escribió un encoder, parser ni cliente SNMP en esta etapa. Community stri
 de v1/v2c no ofrecen la seguridad de SNMPv3; limitar la práctica a la red de
 laboratorio acordada y documentar ese alcance en el informe final.
 
-## Credenciales SSH previstas
+## Credenciales SSH (implementado el 29/10/2026)
 
-Contratos con referencias a credenciales, nunca contraseñas dentro de equipos,
-rutas, outbox o logs. El adaptador deberá usar Keystore/Keychain, validar la identidad
-del host y limitar comandos por vendor. La biblioteca y su compatibilidad nativa
-no se han validado. No existe una sesión SSH en esta entrega.
+- Cliente: módulo Kotlin propio con JSch 0.2.25. Se descartó
+  react-native-ssh-sftp porque desactiva la verificación del servidor.
+- Contraseña: cifrada con AES-256-GCM y una clave no exportable del Android
+  Keystore. JavaScript la entrega una vez al guardarla y no puede volver a
+  leerla. Nunca está en equipos, rutas, diagnósticos, la cola ni logs.
+- Identidad del servidor: huella SHA256 confirmada por el técnico en la primera
+  conexión y verificada en las siguientes antes de autenticar; si cambia, no se
+  envía la contraseña.
+- Comandos: lista cerrada por perfil en el código nativo (Linux probado en
+  laboratorio; Cisco IOS y RouterOS sin probar).
+- Validado contra un servidor SSH de laboratorio en la PC. Falta un equipo real.
+  Detalle en TRASPASO.md, Paso 5.
 
 ## Cola offline prevista
 

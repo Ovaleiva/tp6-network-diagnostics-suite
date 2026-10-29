@@ -27,8 +27,9 @@ GetRequest/Response SNMPv2c, sysName, uptime y contadores de una interfaz explí
 con un agente controlado de PC. RF02 está en validación de laboratorio; falta
 la prueba sobre un equipo de red físico. RF05 (instalación con fotos, GPS y notas)
 y RF06 (PDF local con notas, fotos y coordenadas, abierto con el visor del sistema)
-se probaron en el emulador; ver docs/TRASPASO.md. RF03, RF04, RF07 y RF08 siguen
-pendientes.
+se probaron en el emulador; ver docs/TRASPASO.md. RF03 (SSH con credencial en el
+Keystore y huella del servidor verificada) se validó contra un servidor de
+laboratorio; falta un equipo real. RF04, RF07 y RF08 siguen pendientes.
 Disponer de un tipo o una pantalla no demuestra que un requisito funciona.
 El descubrimiento también conserva el hostname resuelto que NSD devuelve en
 Android API 36+; en versiones anteriores o sin respuesta se muestra no disponible.
