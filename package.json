@@ -12,7 +12,9 @@
     "format:check": "prettier --check App.tsx src __tests__ scripts",
     "bundle:android": "node scripts/bundle-android.cjs",
     "doctor:android": "node scripts/check-android.cjs",
-    "verify": "npm run typecheck && npm run lint && npm test -- --runInBand && npm run bundle:android"
+    "verify": "npm run typecheck && npm run lint && npm test -- --runInBand && npm run bundle:android",
+    "lab:snmp": "node scripts/snmp-lab.cjs",
+    "test:snmp-lab": "node --test scripts/snmp-lab.test.cjs"
   },
   "dependencies": {
     "react": "19.3.0",
