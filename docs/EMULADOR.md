@@ -44,6 +44,10 @@ llegaba a abrir. Diferencias con la sección siguiente, que describe la PC anter
 
 - Para reemplazar el contenido de un campo: tocarlo, `input keyevent 123`
   (fin), varias veces `input keyevent 67` (borrar) y después `input text`.
+- Para probar Instalación sin diálogos de permisos:
+  `adb shell pm grant com.networkdiagnosticssuite android.permission.CAMERA`
+  (y `ACCESS_FINE_LOCATION`). El obturador se acciona con
+  `input swipe 640 2628 640 2628 150`.
 
 ## Entorno instalado en la PC anterior
 
@@ -147,8 +151,10 @@ Confirmar primero el identificador con adb devices si hay más de un emulador.
 - Diagnóstico guarda cada consulta SNMP exitosa (verificado el 29/10); Equipos
   guarda los equipos encontrados. En el emulador la búsqueda mDNS vuelve vacía,
   por lo que el guardado de equipos requiere un teléfono físico en la LAN.
-- Las pantallas pendientes (Identificación, Reportes, Sincronización e
-  Historial) lo indican claramente.
+- Reportes genera el PDF de una instalación guardada y lo abre con el visor
+  del sistema (en el emulador, el de Google Drive). Ver docs/TRASPASO.md, Paso 4.
+- Las pantallas pendientes (Identificación, Sincronización e Historial) lo
+  indican claramente.
 
 Para simular la ubicación del emulador:
 

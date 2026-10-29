@@ -5,7 +5,10 @@ La etapa 1 preparó arquitectura y navegación. La etapa 2 agrega una **búsqued
 nativa en Android**, con cancelación, resultados por IP y detalle de servicios.
 RF01 es parcial: falta validar un equipo externo de la LAN y resolver la exigencia
 de MAC. La etapa 3 agrega consultas SNMPv2c y un agente de laboratorio en la PC.
-RF02 está en validación de laboratorio; RF03–RF08 y la persistencia siguen pendientes.
+RF02 está en validación de laboratorio. Luego se agregaron la base local SQLite con
+cola de sincronización, el registro de instalaciones con fotos y GPS (RF05) y el PDF
+de instalación (RF06), probados en el emulador. RF03, RF04, RF07 y RF08 siguen
+pendientes. El estado detallado está en [el traspaso](docs/TRASPASO.md).
 
 ## Empezar
 

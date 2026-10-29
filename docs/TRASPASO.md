@@ -122,10 +122,58 @@ cmd /c "adb -s emulator-5554 exec-out run-as com.networkdiagnosticssuite cat dat
 
 y abrirla con `node:sqlite` (`new DatabaseSync('nd.db', { readOnly: true })`).
 
+## Paso 4 — PDF de instalación, RF06 (HECHO y probado en emulador)
+
+Decisión: **pdf-lib** (JavaScript puro) en lugar de react-native-html-to-pdf.
+Justificar en el informe:
+
+- No agrega código nativo para generar el PDF; embebe los JPEG directamente.
+- La generación se prueba en Jest con PDF reales (páginas, imágenes, título).
+- react-native-html-to-pdf (1.3.0) depende del WebView de Android y no estaba
+  verificada con RN 0.88 y la nueva arquitectura.
+- Contra: pdf-lib no publica versiones desde 2022 (1.17.1, estable). Solo usa
+  las fuentes estándar del PDF (WinAnsi); los caracteres fuera de ese conjunto
+  (emojis, otros alfabetos) se reemplazan por `?`.
+
+Para abrir el PDF se escribió un módulo Kotlin propio (sin dependencias nuevas).
+
+- `src/features/reporting/installationPdf.ts`: lógica pura. A4 con cabecera
+  (sitio, equipo, instalación, revisión, fechas, GPS, cantidad de fotos), notas
+  con ajuste de línea y cada foto con su epígrafe (fecha y GPS o "sin GPS").
+  Lee las fotos de a una (`PhotoReader`) para no tener todas en memoria.
+  Respeta la orientación EXIF: la cámara guarda los píxeles del sensor y marca
+  el giro (orientación 6 en el emulador); sin girarlas, las fotos salían de costado.
+- `reportId` = `rep-<instalación>-r<revisión>`: regenerar la misma revisión
+  reemplaza el reporte y su acción `report.upload` en la cola.
+- `InstallationReport.installationRevision`: revisión documentada por el PDF.
+  La pantalla avisa si el último PDF es de una revisión anterior.
+- `src/infrastructure/reporting/androidReporting.ts`: escribe en `files/reports`.
+- `src/specs/NativePdfViewer.ts` + `PdfViewerModule.kt`: `ReportFileProvider`
+  (subclase propia de FileProvider, para no chocar con los de las bibliotecas)
+  y `ACTION_VIEW`. Solo comparte PDF de `files/reports` (`res/xml/report_paths.xml`).
+  Errores: `E_NOT_FOUND`, `E_NO_VIEWER`.
+- `ReportsScreen`: lista instalaciones; "Generar PDF" guarda reporte + acción
+  en una transacción (`saveReportWithAction`); "Abrir PDF".
+- Repositorio: `listReports(installationId?)`.
+- Pruebas: `installation-pdf.test.ts` (19, con JPEG real en
+  `__tests__/fixtures/photo.jpg`), `reports-screen.test.tsx` (6), repositorio (+1).
+  Total 82/82.
+
+### Prueba en emulador (29/10, HECHA)
+
+Instalación `torre-norte` con GPS simulado, notas en dos líneas y 2 fotos.
+Reportes generó `rep-inst-…-r1.pdf` (263 KB, 2 páginas, 2 imágenes); la base
+quedó con el reporte (revisión 1) y una acción `report.upload` pendiente.
+Regenerar la misma revisión no duplicó ni el reporte ni la acción. "Abrir PDF"
+lo mostró en el visor de Google Drive del emulador
+(`docs/evidencia/pdf-instalacion-android.png`).
+
+En modo debug, la primera vez que se abre Reportes Metro arma el bloque diferido
+de pdf-lib (~800 módulos) y la pantalla muestra "Cargando instalaciones…"
+unos segundos.
+
 ## Plan restante
 
-3. RF06 — PDF de instalación con fotos y GPS (react-native-html-to-pdf u otra
-   compatible con RN 0.88). Guardar con `saveReportWithAction` (`report.upload`).
 4. RF03 — SSH con comandos predefinidos (`uptime`, `interfaces`), credenciales en
    Keystore (react-native-keychain). Nunca contraseñas en texto plano ni en la cola.
    Evaluar módulo nativo propio con JSch si react-native-ssh-sftp no funciona en RN 0.88.
