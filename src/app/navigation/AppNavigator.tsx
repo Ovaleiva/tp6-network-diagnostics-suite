@@ -7,6 +7,7 @@ import { DeviceDetailsScreen } from '../../features/discovery/DeviceDetailsScree
 import { DiagnosticsScreen } from '../../features/protocols/DiagnosticsScreen';
 import { IdentificationScreen } from '../../features/identification/IdentificationScreen';
 import { InstallationScreen } from '../../features/evidence/InstallationScreen';
+import { CameraScreen } from '../../features/evidence/CameraScreen';
 import { ReportsScreen } from '../../features/reporting/ReportsScreen';
 import { HistoryScreen } from '../../features/history/HistoryScreen';
 import { SyncScreen } from '../../features/sync/SyncScreen';
@@ -63,6 +64,11 @@ export function AppNavigator() {
           name="Installation"
           component={InstallationScreen}
           options={{ title: 'Instalación' }}
+        />
+        <Stack.Screen
+          name="Camera"
+          component={CameraScreen}
+          options={{ title: 'Foto de evidencia' }}
         />
         <Stack.Screen
           name="Reports"

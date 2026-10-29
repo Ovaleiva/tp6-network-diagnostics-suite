@@ -26,12 +26,18 @@
     }
   },
   "dependencies": {
-    "react": "19.3.0",
-    "react-native": "0.88.0",
-    "react-native-safe-area-context": "^5.0.0",
+    "@dr.pogodin/react-native-fs": "^2.41.0",
+    "@op-engineering/op-sqlite": "^19.0.1",
+    "@react-native-community/geolocation": "^3.4.0",
     "@react-navigation/native": "^7.0.0",
     "@react-navigation/native-stack": "^7.0.0",
-    "react-native-screens": "^4.0.0"
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-nitro-image": "^0.15.2",
+    "react-native-nitro-modules": "^0.37.1",
+    "react-native-safe-area-context": "^5.0.0",
+    "react-native-screens": "^4.0.0",
+    "react-native-vision-camera": "^5.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

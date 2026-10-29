@@ -5,6 +5,7 @@ import { HomeScreen } from '../src/features/home/HomeScreen';
 import { ModuleScreen } from '../src/shared/components/ModuleScreen';
 import { DevicesScreen } from '../src/features/discovery/DevicesScreen';
 import { DiagnosticsScreen } from '../src/features/protocols/DiagnosticsScreen';
+import { InstallationScreen } from '../src/features/evidence/InstallationScreen';
 
 jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
   __esModule: true,
@@ -16,6 +17,16 @@ jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
     }),
     cancelDiscovery: jest.fn(),
   },
+}));
+
+jest.mock('../src/infrastructure/storage/opSqlite', () => ({
+  getRepository: jest.fn().mockResolvedValue({
+    listInstallations: jest.fn().mockResolvedValue([]),
+  }),
+}));
+
+jest.mock('../src/infrastructure/evidence/androidEvidence', () => ({
+  androidEvidence: {},
 }));
 
 jest.useFakeTimers();
@@ -40,7 +51,6 @@ test('inicia en Inicio sin montar servicios ni pantallas de diagnóstico', () =>
 
 test.each([
   ['Identificar equipo', 'Identificar equipo', 'RF-04'],
-  ['Instalación', 'Instalación', 'RF-05'],
   ['Reportes', 'Reportes', 'RF-06'],
   ['Sincronización', 'Sincronización', 'RF-07'],
   ['Historial', 'Historial', 'RF-08'],
@@ -78,6 +88,20 @@ test('Equipos abre la búsqueda funcional y permite volver a Inicio', async () =
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(DevicesScreen)).toHaveLength(0);
+});
+
+test('Instalación abre el formulario de evidencia y permite volver a Inicio', async () => {
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.navigate('Installation');
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(InstallationScreen)).toHaveLength(1);
+  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.goBack();
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(InstallationScreen)).toHaveLength(0);
 });
 
 test('Diagnóstico recibe el identificador del equipo por la ruta', async () => {
