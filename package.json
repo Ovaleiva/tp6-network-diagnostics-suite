@@ -15,7 +15,9 @@
     "verify": "npm run typecheck && npm run lint && npm test -- --runInBand && npm run bundle:android",
     "android:env": "node scripts/android.cjs env",
     "lab:snmp": "node scripts/snmp-lab.cjs",
-    "test:snmp-lab": "node --test scripts/snmp-lab.test.cjs"
+    "test:snmp-lab": "node --test scripts/snmp-lab.test.cjs",
+    "lab:ssh": "node scripts/ssh-lab.cjs",
+    "test:ssh-lab": "node --test scripts/ssh-lab.test.cjs"
   },
   "codegenConfig": {
     "name": "NetworkDiscoverySpec",
@@ -59,6 +61,7 @@
     "jest": "^29.6.3",
     "prettier": "2.8.8",
     "react-test-renderer": "19.3.0",
+    "ssh2": "^1.17.0",
     "typescript": "^6.0.3"
   },
   "engines": {

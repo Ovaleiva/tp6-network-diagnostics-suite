@@ -7,6 +7,7 @@ import { DevicesScreen } from '../src/features/discovery/DevicesScreen';
 import { DiagnosticsScreen } from '../src/features/protocols/DiagnosticsScreen';
 import { InstallationScreen } from '../src/features/evidence/InstallationScreen';
 import { ReportsScreen } from '../src/features/reporting/ReportsScreen';
+import { SshScreen } from '../src/features/protocols/SshScreen';
 
 jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
   __esModule: true,
@@ -135,4 +136,25 @@ test('Diagnóstico recibe el identificador del equipo por la ruta', async () => 
     app.root.findByType(DiagnosticsScreen).props.route.params.deviceId,
   ).toBe('equipo-prueba');
   expect(JSON.stringify(app.toJSON())).toContain('Consultar SNMP');
+});
+
+test('Diagnóstico abre SSH con el mismo equipo', async () => {
+  await act(async () => {
+    app.root
+      .findByType(HomeScreen)
+      .props.navigation.navigate('Diagnostics', { deviceId: 'equipo-prueba', ip: '192.0.2.10' });
+    jest.runAllTimers();
+  });
+  const open = app.root.find(
+    node =>
+      node.props.accessibilityLabel === 'Abrir diagnóstico SSH' &&
+      typeof node.props.onPress === 'function',
+  );
+  await act(async () => {
+    open.props.onPress();
+    jest.runAllTimers();
+  });
+  const screen = app.root.findByType(SshScreen);
+  expect(screen.props.route.params).toMatchObject({ deviceId: 'equipo-prueba', ip: '192.0.2.10' });
+  expect(JSON.stringify(app.toJSON())).toContain('RF-03 · SSH CON COMANDOS PREDEFINIDOS');
 });

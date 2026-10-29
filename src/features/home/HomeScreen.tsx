@@ -23,9 +23,9 @@ const modules: ReadonlyArray<{
   {
     route: 'Diagnostics',
     title: 'Diagnóstico',
-    description: 'Consulta SNMPv2c de laboratorio. SSH pendiente.',
+    description: 'Consultas SNMPv2c y comandos SSH predefinidos.',
     requirement: 'RF-02 / RF-03',
-    status: 'SNMP EN LABORATORIO · SSH PENDIENTE',
+    status: 'SNMP Y SSH EN LABORATORIO',
   },
   {
     route: 'Identification',
@@ -78,13 +78,13 @@ export function HomeScreen({
       </Text>
       <View style={styles.notice}>
         <Text style={styles.noticeTitle}>
-          En desarrollo · mDNS, SNMP, instalaciones y PDF
+          En desarrollo · mDNS, SNMP, SSH, instalaciones y PDF
         </Text>
         <Text style={styles.description}>
-          Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP,
-          Instalación registra fotos, GPS y notas sin conexión y Reportes genera
-          su PDF. Identificación, SSH, sincronización e historial todavía están
-          pendientes.
+          Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP y
+          SSH, Instalación registra fotos, GPS y notas sin conexión y Reportes
+          genera su PDF. Identificación, sincronización e historial todavía
+          están pendientes.
         </Text>
       </View>
       {modules.map(module => (

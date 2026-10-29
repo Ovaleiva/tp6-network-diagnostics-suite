@@ -16,7 +16,11 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Diagnostics'> & {
   repository?: LocalRepository;
 };
 
-export function DiagnosticsScreen({ route, repository: injected }: Props) {
+export function DiagnosticsScreen({
+  navigation,
+  route,
+  repository: injected,
+}: Props) {
   const selected = route.params;
   const getRepository = useRepository(injected);
   const [saveStatus, setSaveStatus] = useState('');
@@ -201,9 +205,28 @@ export function DiagnosticsScreen({ route, repository: injected }: Props) {
           {!!saveStatus && <Text style={styles.body}>{saveStatus}</Text>}
         </View>
       )}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Abrir diagnóstico SSH"
+        disabled={busy}
+        onPress={() =>
+          navigation.navigate('SshDiagnostics', {
+            deviceId: selected?.deviceId,
+            ip: selected?.ip,
+            siteId: selected?.siteId,
+          })
+        }
+        style={[styles.card, busy && styles.disabled]}
+      >
+        <Text style={styles.subtitle}>Diagnóstico SSH</Text>
+        <Text style={styles.body}>
+          Uptime e interfaces con comandos predefinidos y credencial en el
+          Keystore.
+        </Text>
+      </Pressable>
       <Text style={styles.body}>
-        RF-02 en validación de laboratorio. SSH (RF-03) y la pantalla de
-        historial (RF-08) siguen pendientes.
+        RF-02 en validación de laboratorio. La pantalla de historial (RF-08)
+        sigue pendiente.
       </Text>
     </Screen>
   );

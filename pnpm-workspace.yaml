@@ -2,3 +2,8 @@
 nodeLinker: hoisted
 storeDir: .pnpm-store
 cacheDir: .pnpm-cache
+# ssh2 (solo el laboratorio SSH de la PC) funciona en JavaScript puro; no se
+# compilan sus aceleradores nativos.
+allowBuilds:
+  cpu-features: false
+  ssh2: false

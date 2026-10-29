@@ -6,6 +6,9 @@ export type RootStackParamList = {
   Devices: undefined;
   DeviceDetails: { device: Device };
   Diagnostics: { deviceId: string; ip?: string; siteId?: string } | undefined;
+  SshDiagnostics:
+    | { deviceId?: string; ip?: string; siteId?: string }
+    | undefined;
   Identification: undefined;
   Installation:
     | { deviceId?: string; siteId?: string; capturedPhotoPath?: string }

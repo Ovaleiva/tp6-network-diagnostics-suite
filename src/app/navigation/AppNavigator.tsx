@@ -5,6 +5,7 @@ import { HomeScreen } from '../../features/home/HomeScreen';
 import { DevicesScreen } from '../../features/discovery/DevicesScreen';
 import { DeviceDetailsScreen } from '../../features/discovery/DeviceDetailsScreen';
 import { DiagnosticsScreen } from '../../features/protocols/DiagnosticsScreen';
+import { SshScreen } from '../../features/protocols/SshScreen';
 import { IdentificationScreen } from '../../features/identification/IdentificationScreen';
 import { InstallationScreen } from '../../features/evidence/InstallationScreen';
 import { CameraScreen } from '../../features/evidence/CameraScreen';
@@ -54,6 +55,11 @@ export function AppNavigator() {
           name="Diagnostics"
           component={DiagnosticsScreen}
           options={{ title: 'Diagnóstico' }}
+        />
+        <Stack.Screen
+          name="SshDiagnostics"
+          component={SshScreen}
+          options={{ title: 'Diagnóstico SSH' }}
         />
         <Stack.Screen
           name="Identification"
