@@ -134,6 +134,15 @@ export function createSqliteRepository(
     },
     findReport: id =>
       one<InstallationReport>('SELECT payload FROM reports WHERE id = ?', [id]),
+    async listReports(installationId) {
+      const { rows } = await db.execute(
+        `SELECT payload FROM reports ${
+          installationId ? 'WHERE installation_id = ?' : ''
+        } ORDER BY created_at DESC`,
+        installationId ? [installationId] : [],
+      );
+      return rows.map(row => parse<InstallationReport>(row));
+    },
     async saveInstallationWithAction(installation, action) {
       await db.transaction(async tx => {
         await tx.execute(

@@ -19,6 +19,8 @@ export interface LocalRepository {
   findInstallation(id: EntityId): Promise<Installation | null>;
   listInstallations(siteId?: EntityId): Promise<Installation[]>;
   findReport(id: EntityId): Promise<InstallationReport | null>;
+  // Reportes de todas las instalaciones o de una, del más reciente al más viejo.
+  listReports(installationId?: EntityId): Promise<InstallationReport[]>;
   // Las dos escrituras deben confirmarse juntas en una transacción de la base local.
   saveInstallationWithAction(
     installation: Installation,

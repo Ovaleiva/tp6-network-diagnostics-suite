@@ -46,7 +46,7 @@ const modules: ReadonlyArray<{
     title: 'Reportes',
     description: 'Documentación de instalaciones en PDF.',
     requirement: 'RF-06',
-    status: 'PENDIENTE DE IMPLEMENTACIÓN',
+    status: 'PDF CON FOTOS Y GPS SIN CONEXIÓN',
   },
   {
     route: 'Sync',
@@ -78,12 +78,13 @@ export function HomeScreen({
       </Text>
       <View style={styles.notice}>
         <Text style={styles.noticeTitle}>
-          En desarrollo · mDNS, SNMP e instalaciones
+          En desarrollo · mDNS, SNMP, instalaciones y PDF
         </Text>
         <Text style={styles.description}>
-          Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP e
-          Instalación registra fotos, GPS y notas sin conexión. Identificación,
-          SSH, PDF, sincronización e historial todavía están pendientes.
+          Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP,
+          Instalación registra fotos, GPS y notas sin conexión y Reportes genera
+          su PDF. Identificación, SSH, sincronización e historial todavía están
+          pendientes.
         </Text>
       </View>
       {modules.map(module => (

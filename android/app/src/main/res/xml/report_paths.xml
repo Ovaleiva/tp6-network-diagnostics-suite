@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Únicos archivos que ReportFileProvider puede compartir con un visor de PDF. -->
+<paths>
+    <files-path name="reports" path="reports/" />
+</paths>

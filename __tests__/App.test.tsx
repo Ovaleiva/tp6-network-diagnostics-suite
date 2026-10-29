@@ -6,6 +6,7 @@ import { ModuleScreen } from '../src/shared/components/ModuleScreen';
 import { DevicesScreen } from '../src/features/discovery/DevicesScreen';
 import { DiagnosticsScreen } from '../src/features/protocols/DiagnosticsScreen';
 import { InstallationScreen } from '../src/features/evidence/InstallationScreen';
+import { ReportsScreen } from '../src/features/reporting/ReportsScreen';
 
 jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
   __esModule: true,
@@ -22,11 +23,16 @@ jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
 jest.mock('../src/infrastructure/storage/opSqlite', () => ({
   getRepository: jest.fn().mockResolvedValue({
     listInstallations: jest.fn().mockResolvedValue([]),
+    listReports: jest.fn().mockResolvedValue([]),
   }),
 }));
 
 jest.mock('../src/infrastructure/evidence/androidEvidence', () => ({
   androidEvidence: {},
+}));
+
+jest.mock('../src/infrastructure/reporting/androidReporting', () => ({
+  androidReporting: {},
 }));
 
 jest.useFakeTimers();
@@ -51,7 +57,6 @@ test('inicia en Inicio sin montar servicios ni pantallas de diagnóstico', () =>
 
 test.each([
   ['Identificar equipo', 'Identificar equipo', 'RF-04'],
-  ['Reportes', 'Reportes', 'RF-06'],
   ['Sincronización', 'Sincronización', 'RF-07'],
   ['Historial', 'Historial', 'RF-08'],
 ])('abre %s y permite volver a Inicio', async (label, title, requirement) => {
@@ -102,6 +107,21 @@ test('Instalación abre el formulario de evidencia y permite volver a Inicio', a
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(InstallationScreen)).toHaveLength(0);
+});
+
+test('Reportes abre la lista de instalaciones y permite volver a Inicio', async () => {
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.navigate('Reports');
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(ReportsScreen)).toHaveLength(1);
+  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
+  expect(JSON.stringify(app.toJSON())).toContain('RF-06 · PDF DE INSTALACIÓN');
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.goBack();
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(ReportsScreen)).toHaveLength(0);
 });
 
 test('Diagnóstico recibe el identificador del equipo por la ruta', async () => {

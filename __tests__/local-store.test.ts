@@ -142,6 +142,39 @@ maybe('repositorio SQLite', () => {
     expect(await repo.retryFailed()).toBe(1);
   });
 
+  it('guarda reportes con su acción y los lista por instalación', async () => {
+    const { repo } = await setup();
+    const report = (id: string, installationId: string, createdAt: string) => ({
+      id,
+      installationId,
+      installationRevision: 1,
+      localPdfUri: `file:///data/reports/${id}.pdf`,
+      createdAt,
+    });
+    await repo.saveReportWithAction(
+      report('r1', 'inst-1', '2026-10-28T10:00:00.000Z'),
+      action({ id: 'a1', entityId: 'r1', kind: 'report.upload' }),
+    );
+    await repo.saveReportWithAction(
+      report('r2', 'inst-1', '2026-10-28T11:00:00.000Z'),
+      action({ id: 'a2', entityId: 'r2', kind: 'report.upload' }),
+    );
+    await repo.saveReportWithAction(
+      report('r3', 'inst-2', '2026-10-28T12:00:00.000Z'),
+      action({ id: 'a3', entityId: 'r3', kind: 'report.upload' }),
+    );
+    expect((await repo.listReports('inst-1')).map(r => r.id)).toEqual(['r2', 'r1']);
+    expect((await repo.listReports()).map(r => r.id)).toEqual(['r3', 'r2', 'r1']);
+    expect(await repo.findReport('r3')).toEqual(
+      report('r3', 'inst-2', '2026-10-28T12:00:00.000Z'),
+    );
+    expect((await repo.listPendingActions()).map(a => a.kind)).toEqual([
+      'report.upload',
+      'report.upload',
+      'report.upload',
+    ]);
+  });
+
   it('filtra historial por equipo y sitio', async () => {
     const { repo } = await setup();
     const base = {

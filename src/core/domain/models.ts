@@ -55,6 +55,8 @@ export interface Installation {
 export interface InstallationReport {
   id: EntityId;
   installationId: EntityId;
+  // Revisión de la instalación usada para el PDF; el reporte la documenta tal cual era.
+  installationRevision: number;
   localPdfUri: string;
   createdAt: IsoDate;
 }
