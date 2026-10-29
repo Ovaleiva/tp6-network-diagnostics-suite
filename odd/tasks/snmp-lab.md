@@ -1,6 +1,6 @@
 # SNMP laboratory from Android Emulator
 Branch: codex/snmp-lab. Delivery: exception-ok, explicitly approved; local Git only, no remote operations authorized. Original forecast 900–1200 lines was exceeded; workspace assessment included 3927 lines with prior RF01/environment changes. Preserve coherent modules with tests even above400lines.
-Runner: Jest for codec/UI, Node test runner for local UDP agent, Gradle and instrumentation for Android. Engram mirror: pending (server does not recognize this repository project).
+Runner: Jest for codec/UI, Node test runner for local UDP agent, Gradle and instrumentation for Android. All five tasks verified and saved locally. Engram mirror pending: workspace memory project unresolved. No remote delivery authorized.
 
 ## Specs
 
@@ -41,8 +41,20 @@ Use the existing emulator and PC. RF01 MAC and external physical-LAN validation 
 - T1 | S2,S3 | delegated, parallel codec writer | complete | commit a934c49e284b550fb9587b599610a35c2aa3c4fe | Pure BER codec/types; final Jest includes codec tests, independent source inspection found no blockers.
 - T2 | S1,S3,S4 | delegated, parallel native writer | complete | commit 92cfd28dc20e5cd34e487e80fb32407fe2582d9f | Actual native instrumentation stream PASS/code-1 after Gradle runner selection correction; app success/timeout/cancel/retry previously observed.
 - T3 | S1,S2,S4 | delegated with T1, same owner/surface | complete | commit f479b1cb49aea941add9efadef31e41013be80a9 | Five actual UDP/CLI tests passed on host. Sandbox UDP timed out; not counted as success.
-- T4 | S1,S2,S3 | inline | verified, delivery pending | commit pending | Functional client/UI, 40/40 final Jest, bundle, TypeScript/ESLint/format and actual app-to-PC query. Prior UI RED: all three cases failed on missing query button.
-- T5 | S1,S2,S3,S4 | independent verification | verified, delivery pending | commit pending | Corrected runner registration and native PASS/code-1; independent fresh TEMP Jest 24/24 plus 42 unchanged file hashes, S1-S4 laboratory verdicts PASS. No physical router/LAN/MAC acceptance claimed. Work-unit commits still await delivery strategy.
+- T4 | S1,S2,S3 | inline | complete | commit d0a08ba4ce18a3e0494661b5b25de011685ae4d4 | Functional client/UI, 40/40 final Jest, bundle, TypeScript/ESLint/format and actual app-to-PC query. Prior UI RED: all three cases failed on missing query button.
+- T5 | S1,S2,S3,S4 | independent verification | complete | commit d0a08ba4ce18a3e0494661b5b25de011685ae4d4 | Corrected runner registration and native PASS/code-1; independent fresh TEMP Jest 24/24 plus 42 unchanged file hashes, S1-S4 laboratory verdicts PASS. No physical router/LAN/MAC acceptance claimed. Work-unit commits still await delivery strategy.
+
+
+### Saved local work units
+
+Delivery: exception-ok approved by the user; local commits only. Each identity defines its rollback boundary; dependent later units must be considered before reverting a prerequisite. No remote publication.
+
+| Unit | Commit | Scope and observed verification |
+| --- | --- | --- |
+| Codec | `a934c49e284b550fb9587b599610a35c2aa3c4fe` | src/core/snmp/* and codec tests; deterministic BER vectors and rejection checks. |
+| PC laboratory | `f479b1cb49aea941add9efadef31e41013be80a9` | scripts/snmp-lab.* and npm commands; five real UDP/CLI checks. |
+| Android platform | `92cfd28dc20e5cd34e487e80fb32407fe2582d9f` | Native mDNS/UDP modules, Codegen, instrumentation and Windows setup; native PASS/code-1 and default/invalid runner checks. |
+| Application workflow | `d0a08ba4ce18a3e0494661b5b25de011685ae4d4` | Discovery/detail/SNMP screens, adapters, navigation, tests, guides and screenshots; prior 40 Jest, five UDP and 24 independent tests, plus real emulator-to-PC success/timeout/cancel/retry. |
 
 ## Log
 
@@ -74,3 +86,5 @@ Use the existing emulator and PC. RF01 MAC and external physical-LAN validation 
 - L26: Saved local work unit lab: f479b1cb49aea941add9efadef31e41013be80a9 (feat(lab): add loopback SNMP agent and UDP checks). Verification evidence remains as recorded above; source bytes were not edited while staging.
 - L27: Git whitespace check required removing surplus blank lines at EOF only in new Markdown documents: docs/EMULADOR.md. No executable source changed.
 - L28: Saved local work unit android: 92cfd28dc20e5cd34e487e80fb32407fe2582d9f (feat(android): add native discovery and cancellable UDP transport). Verification evidence remains as recorded above; source bytes were not edited while staging.
+- L29: Saved local work unit app: d0a08ba4ce18a3e0494661b5b25de011685ae4d4 (feat(app): integrate LAN discovery and SNMP diagnostics). Verification evidence remains as recorded above; source bytes were not edited while staging.
+- L30: Local committed-range assessments: codec: medium/under_budget; lab: medium/under_budget; android: medium/under_budget; app: medium/under_budget. Canonical inventory and explicit exclusion kept future untracked files outside each committed-only candidate. The initial codec assessment needed this declaration; after correction, native assessment succeeded. All ranges remain under_budget, no START/consent/review authority created. Final provenance commit will record these identities without changing executable source.
