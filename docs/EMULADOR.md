@@ -1,6 +1,51 @@
 # Ejecutar el TP6 en el emulador Android
 
-## Entorno instalado en esta PC
+## PC actual (desde el 29/10/2026)
+
+El trabajo pasó a una PC de 32 GB de RAM; en la anterior (16 GB) el emulador no
+llegaba a abrir. Diferencias con la sección siguiente, que describe la PC anterior:
+
+- Microsoft OpenJDK 17.0.21 en `C:/Program Files/Microsoft/jdk-17.0.21.21-hotspot`
+  (JAVA_HOME de máquina). También está instalado JDK 21; el lanzador lo ignora.
+- SDK en `D:/Android/Sdk` (ANDROID_HOME de usuario) y AVDs en `D:/Android/Avd`.
+  Los comandos de este documento que usan `C:/Android/Sdk` deben usar esa ruta.
+- AVD `Pixel_10_Pro`: Android 16 (system image android-36.1, páginas de 16 KB),
+  x86_64, 2048 MB de RAM, 4 núcleos, 1280×2856. Arranca con:
+
+  ```powershell
+  & D:/Android/Sdk/emulator/emulator.exe -avd Pixel_10_Pro -no-snapshot-load -no-boot-anim
+  ```
+
+- El SDK no tenía la plataforma 37, build-tools 37.0.0 ni CMake;
+  `doctor:android` los marca como FALTA, pero Gradle los descarga en la primera
+  compilación porque las licencias ya están aceptadas. No hay `cmdline-tools`.
+- C: tiene poco espacio libre. La caché de Gradle se llevó a D: solo para la
+  terminal de compilación, antes de `npm.cmd run android`:
+
+  ```powershell
+  $env:GRADLE_USER_HOME = 'D:/Android/gradle-home'
+  ```
+
+  Usar siempre esa ruta para reutilizar lo ya descargado.
+- Primera compilación: 9 min 37 s.
+
+### Automatizar la prueba con adb
+
+- `adb shell uiautomator dump` lista los elementos con su `content-desc`, que es
+  el `accessibilityLabel` de la app. Para los campos, tocar el nodo cuyo
+  `content-desc` es la etiqueta (por ejemplo `Comunidad SNMP`), no el texto
+  visible del título, que no enfoca el campo.
+- Gboard abría el tutorial "Try out your stylus" al escribir con
+  `input text`, y el texto terminaba en otro campo. Se desactivó en el emulador:
+
+  ```powershell
+  adb -s emulator-5554 shell settings put secure stylus_handwriting_enabled 0
+  ```
+
+- Para reemplazar el contenido de un campo: tocarlo, `input keyevent 123`
+  (fin), varias veces `input keyevent 67` (borrar) y después `input text`.
+
+## Entorno instalado en la PC anterior
 
 - Microsoft OpenJDK 17.0.21 y compilador javac.
 - Android Studio 2026.2.1.8.
@@ -99,8 +144,9 @@ Confirmar primero el identificador con adb devices si hay más de un emulador.
 - El contenido permite desplazarse cuando no entra en pantalla.
 - Instalación pide permisos de ubicación y cámara, toma fotos, obtiene el GPS
   simulado y guarda la instalación con su acción pendiente en la cola.
-- Diagnóstico guarda cada consulta SNMP exitosa; Equipos guarda los equipos
-  encontrados.
+- Diagnóstico guarda cada consulta SNMP exitosa (verificado el 29/10); Equipos
+  guarda los equipos encontrados. En el emulador la búsqueda mDNS vuelve vacía,
+  por lo que el guardado de equipos requiere un teléfono físico en la LAN.
 - Las pantallas pendientes (Identificación, Reportes, Sincronización e
   Historial) lo indican claramente.
 

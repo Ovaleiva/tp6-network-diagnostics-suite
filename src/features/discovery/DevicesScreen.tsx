@@ -186,8 +186,9 @@ export function DevicesScreen({ navigation, repository: injected }: Props) {
         </Text>
         <Text style={styles.body}>
           La MAC y el hostname no se inventan: si no están disponibles se
-          indica. Esta primera integración aún no completa RF-01. Los resultados
-          permanecen en esta pantalla; todavía no hay persistencia local.
+          indica. Esta primera integración aún no completa RF-01. Los equipos
+          encontrados se guardan en el dispositivo para consultarlos sin
+          conexión.
         </Text>
       </View>
     </Screen>

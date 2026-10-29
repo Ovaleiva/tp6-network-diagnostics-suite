@@ -7,6 +7,11 @@ El proyecto se trabaja en C:/dev/tp6. La ruta anterior, dentro de Documents,
 superaba el límite de 260 caracteres del Ninja del SDK al compilar Nitro
 (ver docs/EMULADOR.md, "Ajuste de rutas para Windows").
 
+El 29/10 el trabajo pasó a otra PC (32 GB de RAM), porque en la anterior
+(16 GB) el emulador no llegaba a abrir. El entorno de esta PC está en
+docs/EMULADOR.md, "PC actual". Tras clonar: `npx --yes pnpm@11.25.0 install
+--frozen-lockfile` y `npm.cmd test -- --runInBand` (56/56 OK).
+
 ## Estado verificado antes de estos cambios
 
 - Typecheck OK. Tests: 40/40 OK (App, discovery, snmp-screen, snmp-codec, snmp-client).
@@ -90,7 +95,32 @@ Con adb, el obturador necesita una pulsación (`input swipe x y x y 150`);
 - `src/core/sync/outboxAction.ts`: creación compartida de acciones de la cola.
 - `src/features/local-store/useRepository.ts`: abre la base o usa la inyectada.
 - `getRepository()` comparte la apertura entre pantallas simultáneas.
-- Pendiente de probar en emulador.
+
+### Prueba en emulador (29/10, HECHA para Diagnóstico)
+
+Primera prueba en la PC nueva (ver docs/EMULADOR.md, "PC actual"). Compilación
+nativa OK en 9 min 37 s. Con el agente `npm.cmd run lab:snmp` y los valores por
+defecto de Diagnóstico (`10.0.2.2:1161`, `public`, interfaz 1):
+
+- Cada consulta exitosa mostró `TP6-LAB-PC` y "Guardado en el dispositivo".
+  La base del dispositivo quedó con 2 diagnósticos (`site_id = sitio-local`,
+  `device_id = manual:10.0.2.2`) y 2 acciones `diagnostic.upsert` en estado
+  `pending`, revisión 1 y 0 intentos. Ningún payload contiene la comunidad.
+- Comunidad incorrecta: "El dispositivo no respondió dentro del plazo de
+  espera." Cancelación: "La consulta UDP fue cancelada." En ambos casos la base
+  no cambió.
+- Equipos: la búsqueda mDNS en el emulador vuelve vacía (la red virtual no
+  recibe los anuncios de la LAN), así que `saveDevices` no se ejecutó y la tabla
+  `devices` quedó vacía. **Pendiente:** probarlo con un teléfono físico en la
+  misma Wi-Fi que un equipo que anuncie servicios mDNS (sirve también para RF01).
+
+Para leer la base del emulador:
+
+```powershell
+cmd /c "adb -s emulator-5554 exec-out run-as com.networkdiagnosticssuite cat databases/network-diagnostics.db > nd.db"
+```
+
+y abrirla con `node:sqlite` (`new DatabaseSync('nd.db', { readOnly: true })`).
 
 ## Plan restante
 
