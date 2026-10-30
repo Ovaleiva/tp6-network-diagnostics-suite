@@ -13,6 +13,7 @@ import type {
   Installation,
   PhotoEvidence,
 } from '../../core/domain/models';
+import { formatDate } from '../../shared/format';
 
 // Devuelve el JPEG de la foto en base64, o undefined si el archivo no se pudo leer.
 // Se llama de a una foto por vez para no tener todas en memoria a la vez.
@@ -28,16 +29,6 @@ const MUTED = rgb(0.4, 0.42, 0.46);
 // Un reporte por revisión: regenerar la misma revisión reemplaza el anterior.
 export function reportId(installation: Installation): string {
   return `rep-${installation.id}-r${installation.revision}`;
-}
-
-function pad(value: number) {
-  return String(value).padStart(2, '0');
-}
-
-// Fecha local legible para el técnico: DD/MM/AAAA HH:MM.
-export function formatDate(iso: string): string {
-  const date = new Date(iso);
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 export function formatCoordinates(coordinates: Coordinates): string {

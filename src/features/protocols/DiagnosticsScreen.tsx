@@ -225,8 +225,8 @@ export function DiagnosticsScreen({
         </Text>
       </Pressable>
       <Text style={styles.body}>
-        RF-02 en validación de laboratorio. La pantalla de historial (RF-08)
-        sigue pendiente.
+        RF-02 en validación de laboratorio. Las consultas guardadas se ven en
+        Historial.
       </Text>
     </Screen>
   );

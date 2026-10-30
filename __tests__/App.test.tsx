@@ -8,6 +8,7 @@ import { DiagnosticsScreen } from '../src/features/protocols/DiagnosticsScreen';
 import { InstallationScreen } from '../src/features/evidence/InstallationScreen';
 import { ReportsScreen } from '../src/features/reporting/ReportsScreen';
 import { SshScreen } from '../src/features/protocols/SshScreen';
+import { HistoryScreen } from '../src/features/history/HistoryScreen';
 
 jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
   __esModule: true,
@@ -59,7 +60,6 @@ test('inicia en Inicio sin montar servicios ni pantallas de diagnóstico', () =>
 test.each([
   ['Identificar equipo', 'Identificar equipo', 'RF-04'],
   ['Sincronización', 'Sincronización', 'RF-07'],
-  ['Historial', 'Historial', 'RF-08'],
 ])('abre %s y permite volver a Inicio', async (label, title, requirement) => {
   const button = app.root.findAll(
     node =>
@@ -123,6 +123,21 @@ test('Reportes abre la lista de instalaciones y permite volver a Inicio', async 
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(ReportsScreen)).toHaveLength(0);
+});
+
+test('Historial abre la consulta local y permite volver a Inicio', async () => {
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.navigate('History');
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(HistoryScreen)).toHaveLength(1);
+  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
+  expect(JSON.stringify(app.toJSON())).toContain('RF-08 · HISTORIAL SIN CONEXIÓN');
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.goBack();
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(HistoryScreen)).toHaveLength(0);
 });
 
 test('Diagnóstico recibe el identificador del equipo por la ruta', async () => {

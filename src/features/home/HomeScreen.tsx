@@ -60,7 +60,7 @@ const modules: ReadonlyArray<{
     title: 'Historial',
     description: 'Diagnósticos por equipo o sitio sin Internet.',
     requirement: 'RF-08',
-    status: 'PENDIENTE DE IMPLEMENTACIÓN',
+    status: 'POR SITIO Y EQUIPO SIN CONEXIÓN',
   },
 ];
 
@@ -78,13 +78,13 @@ export function HomeScreen({
       </Text>
       <View style={styles.notice}>
         <Text style={styles.noticeTitle}>
-          En desarrollo · mDNS, SNMP, SSH, instalaciones y PDF
+          En desarrollo · mDNS, SNMP, SSH, instalaciones, PDF e historial
         </Text>
         <Text style={styles.description}>
           Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP y
-          SSH, Instalación registra fotos, GPS y notas sin conexión y Reportes
-          genera su PDF. Identificación, sincronización e historial todavía
-          están pendientes.
+          SSH, Instalación registra fotos, GPS y notas sin conexión, Reportes
+          genera su PDF e Historial los consulta sin red. Identificación y
+          sincronización todavía están pendientes.
         </Text>
       </View>
       {modules.map(module => (

@@ -9,7 +9,8 @@ import { Screen } from '../../shared/components/Screen';
 import { colors } from '../../shared/theme';
 import type { LocalRepository } from '../local-store/contracts';
 import type { ReportingService } from './contracts';
-import { formatDate } from './installationPdf';
+// Desde shared: importar installationPdf cargaría pdf-lib con la pantalla.
+import { formatDate } from '../../shared/format';
 
 type Props = {
   // Se inyectan en pruebas; en la app se cargan la base SQLite y el adaptador Android.
