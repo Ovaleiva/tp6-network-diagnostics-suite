@@ -245,15 +245,46 @@ el diagnóstico ya estaba guardado. No se repitió en los intentos siguientes.
 **Pendiente:** probar con un equipo real (router Linux/OpenWrt, Cisco o
 MikroTik) en la LAN con un teléfono físico.
 
+## Paso 6 — Historial sin conexión, RF08 (HECHO y probado en emulador)
+
+- `src/features/history/historyView.ts`: lógica pura. Describe diagnósticos
+  SNMP (sysName, uptime, octetos) y SSH (comando, código, uptime, interfaces,
+  huella, salida); los registros sin datos estructurados usan su resumen.
+  Lista y filtra equipos.
+- `src/features/history/HistoryScreen.tsx`: filtro por sitio (consulta
+  `listDiagnostics({ siteId })` a la base) y por equipo (aparece si hay más de
+  uno), del más reciente al más antiguo; cada registro se expande para ver el
+  detalle y la salida SSH. Botón "Actualizar".
+- `src/shared/format.ts`: `formatDate` se movió acá. Reportes lo importaba de
+  `installationPdf.ts` y eso cargaba pdf-lib con la pantalla.
+- Pruebas: `history.test.tsx` (10) y App (+1). Jest: 125/125.
+
+### Prueba en emulador (29/10, HECHA)
+
+Con la app abierta se activó el modo avión
+(`adb shell cmd connectivity airplane-mode enable`). "Actualizar" y los filtros
+siguieron funcionando: `sitio-local` mostró 5 diagnósticos (3 SSH, 2 SNMP),
+`torre-norte` "No hay diagnósticos para este filtro" y el detalle SSH se
+expandió con interfaces, huella y salida
+(`docs/evidencia/historial-modo-avion-android.png`).
+
+Límite de la compilación debug: no puede **arrancar** en modo avión, porque
+pide el JavaScript a Metro ("Unable to load script"), y cada `import()`
+dinámico es un bloque que se descarga de Metro la primera vez ("Could not load
+bundle"). Por eso la app se abrió con red y el modo avión se activó después.
+Abrir la app desde cero sin red se debe repetir con el **APK release**, que
+incluye el bundle completo.
+
 ## Plan restante
 
-5. RF04 — QR/barras con el code scanner de vision-camera; asociar a ficha técnica.
-6. RF07 — backend stub (ver backend/README.md) + servicio de sync con NetInfo:
+5. RF07 — backend stub (ver backend/README.md) + servicio de sync con NetInfo:
    `listReadyActions` → `markSending` → enviar → `markSent` / `markFailed` /
-   `markConflict` (HTTP 409 por revisión vieja).
-7. RF08 — pantalla Historial por equipo/sitio leyendo la base sin conexión.
-8. Entregables: repo remoto, APK, informe técnico (SNMP, credenciales SSH, outbox),
-   video demo.
+   `markConflict` (HTTP 409 por revisión vieja). Pantalla Sincronización.
+6. RF04 — QR/barras con el code scanner de vision-camera; asociar a ficha técnica.
+7. Pruebas con teléfono físico en la LAN: RF01 (equipo real y MAC), RF02 (SNMP
+   a un equipo de red), RF03 (SSH a un equipo real).
+8. Entregables: APK release (repetir ahí la prueba de Historial abriendo la app
+   en modo avión), informe técnico (SNMP, credenciales SSH, outbox), video demo.
 
 ## Convenciones del proyecto
 

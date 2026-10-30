@@ -7,8 +7,9 @@ RF01 es parcial: falta validar un equipo externo de la LAN y resolver la exigenc
 de MAC. La etapa 3 agrega consultas SNMPv2c y un agente de laboratorio en la PC.
 RF02 está en validación de laboratorio. Luego se agregaron la base local SQLite con
 cola de sincronización, el registro de instalaciones con fotos y GPS (RF05) y el PDF
-de instalación (RF06) y SSH con comandos predefinidos (RF03, contra un servidor de
-laboratorio), probados en el emulador. RF04, RF07 y RF08 siguen pendientes. El estado detallado está en [el traspaso](docs/TRASPASO.md).
+de instalación (RF06), SSH con comandos predefinidos (RF03, contra un servidor de
+laboratorio) y el historial sin conexión (RF08), probados en el emulador. RF04 y
+RF07 siguen pendientes. El estado detallado está en [el traspaso](docs/TRASPASO.md).
 
 ## Empezar
 

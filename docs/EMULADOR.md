@@ -156,8 +156,11 @@ Confirmar primero el identificador con adb devices si hay más de un emulador.
   Ver docs/TRASPASO.md, Paso 5.
 - Reportes genera el PDF de una instalación guardada y lo abre con el visor
   del sistema (en el emulador, el de Google Drive). Ver docs/TRASPASO.md, Paso 4.
-- Las pantallas pendientes (Identificación, Sincronización e Historial) lo
-  indican claramente.
+- Historial muestra los diagnósticos por sitio y equipo también en modo avión
+  (activarlo con la app ya abierta: la build debug necesita Metro para arrancar).
+  Ver docs/TRASPASO.md, Paso 6.
+- Las pantallas pendientes (Identificación y Sincronización) lo indican
+  claramente.
 
 Para simular la ubicación del emulador:
 
