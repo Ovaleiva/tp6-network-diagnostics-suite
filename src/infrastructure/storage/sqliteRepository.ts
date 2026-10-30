@@ -32,6 +32,7 @@ function toAction(row: SqlRow): OutboxAction {
     ...(row.next_attempt_at
       ? { nextAttemptAt: String(row.next_attempt_at) }
       : {}),
+    ...(row.last_error ? { lastError: String(row.last_error) } : {}),
   };
 }
 
@@ -102,6 +103,8 @@ export function createSqliteRepository(
       );
       return rows.map(row => String(row.site_id));
     },
+    findDiagnostic: id =>
+      one<Diagnostic>('SELECT payload FROM diagnostics WHERE id = ?', [id]),
     async listDiagnostics({ deviceId, siteId }) {
       const where: string[] = [];
       const params: string[] = [];
@@ -196,6 +199,19 @@ export function createSqliteRepository(
       );
       return rows.map(toAction);
     },
+    async getSetting(key) {
+      const { rows } = await db.execute(
+        'SELECT value FROM settings WHERE key = ?',
+        [key],
+      );
+      return rows[0] ? String(rows[0].value) : null;
+    },
+    async setSetting(key, value) {
+      await db.execute(
+        'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+        [key, value],
+      );
+    },
     async listReadyActions(now, limit = 20) {
       const { rows } = await db.execute(
         `SELECT * FROM outbox WHERE state = 'pending'
@@ -235,6 +251,13 @@ export function createSqliteRepository(
         "UPDATE outbox SET state = 'conflict', last_error = ? WHERE id = ?",
         [error.slice(0, 500)],
       ),
+    markRejected: (id, error) =>
+      setState(
+        id,
+        "UPDATE outbox SET state = 'failed', next_attempt_at = NULL, last_error = ? WHERE id = ?",
+        [error.slice(0, 500)],
+      ),
+    discard: id => setState(id, 'DELETE FROM outbox WHERE id = ?', []),
     async recoverInterrupted() {
       const { rows } = await db.execute(
         "SELECT COUNT(*) AS n FROM outbox WHERE state = 'sending'",

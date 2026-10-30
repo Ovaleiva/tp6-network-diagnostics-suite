@@ -1,53 +1,10 @@
 import { migrate } from '../src/infrastructure/storage/schema';
-import type {
-  SqlDatabase,
-  SqlExecutor,
-  SqlValue,
-} from '../src/infrastructure/storage/sql';
 import { createSqliteRepository } from '../src/infrastructure/storage/sqliteRepository';
 import { nextAttemptDelay, MAX_ATTEMPTS } from '../src/core/sync/outboxPolicy';
 import type { OutboxAction, Installation } from '../src/core/domain/models';
+import { hasSqlite, memoryDb } from '../test-support/memoryDb';
 
-// Jest define __filename; los tipos de React Native no lo declaran.
-declare const __filename: string;
-
-// node:sqlite (Node 22.5+) da un SQLite real en las pruebas, sin módulos nativos.
-let sqlite: { DatabaseSync: new (path: string) => any } | null = null;
-try {
-  // createRequire evita el resolvedor de Jest, que no conoce node:sqlite.
-  const { createRequire } = require('module');
-  sqlite = createRequire(__filename)('node:sqlite');
-} catch {
-  sqlite = null;
-}
-const maybe = sqlite ? describe : describe.skip;
-
-function memoryDb(): SqlDatabase {
-  const raw = new sqlite!.DatabaseSync(':memory:');
-  const exec: SqlExecutor = {
-    async execute(sql: string, params: SqlValue[] = []) {
-      const stmt = raw.prepare(sql);
-      if (/^\s*(SELECT|PRAGMA user_version\s*$)/i.test(sql)) {
-        return { rows: stmt.all(...params) };
-      }
-      stmt.run(...params);
-      return { rows: [] };
-    },
-  };
-  return {
-    ...exec,
-    async transaction(fn) {
-      raw.exec('BEGIN');
-      try {
-        await fn(exec);
-        raw.exec('COMMIT');
-      } catch (error) {
-        raw.exec('ROLLBACK');
-        throw error;
-      }
-    },
-  };
-}
+const maybe = hasSqlite ? describe : describe.skip;
 
 const installation: Installation = {
   id: 'inst-1',
@@ -80,8 +37,38 @@ maybe('repositorio SQLite', () => {
 
   it('migra una sola vez', async () => {
     const db = memoryDb();
-    expect(await migrate(db)).toBe(1);
-    expect(await migrate(db)).toBe(1);
+    expect(await migrate(db)).toBe(2);
+    expect(await migrate(db)).toBe(2);
+  });
+
+  it('guarda configuración local', async () => {
+    const { repo } = await setup();
+    expect(await repo.getSetting('backendUrl')).toBeNull();
+    await repo.setSetting('backendUrl', 'http://10.0.2.2:3000');
+    await repo.setSetting('backendUrl', 'http://192.168.0.10:3000');
+    expect(await repo.getSetting('backendUrl')).toBe('http://192.168.0.10:3000');
+  });
+
+  it('rechazo permanente, conflicto y descarte de acciones', async () => {
+    const { repo } = await setup();
+    await repo.saveInstallationWithAction(installation, action());
+    await repo.saveInstallationWithAction(
+      { ...installation, id: 'inst-2' },
+      action({ id: 'act-2', entityId: 'inst-2' }),
+    );
+    await repo.markRejected('act-1', 'datos inválidos');
+    await repo.markConflict('act-2', 'el servidor tiene la revisión 3');
+    const now = new Date('2026-10-28T12:00:00.000Z');
+    expect(await repo.listReadyActions(now)).toHaveLength(0);
+    expect(
+      (await repo.listPendingActions()).map(a => [a.id, a.state, a.lastError]),
+    ).toEqual([
+      ['act-1', 'failed', 'datos inválidos'],
+      ['act-2', 'conflict', 'el servidor tiene la revisión 3'],
+    ]);
+    await repo.discard('act-2');
+    expect((await repo.listPendingActions()).map(a => a.id)).toEqual(['act-1']);
+    expect(await repo.findInstallation('inst-2')).not.toBeNull();
   });
 
   it('guarda instalación y acción juntas', async () => {
@@ -192,6 +179,8 @@ maybe('repositorio SQLite', () => {
       action({ id: 'a2', entityId: 'd2', kind: 'diagnostic.upsert' }),
     );
     expect((await repo.listDiagnostics({ deviceId: 'dev-1' })).map(d => d.id)).toEqual(['d1']);
+    expect((await repo.findDiagnostic('d2'))?.siteId).toBe('site-b');
+    expect(await repo.findDiagnostic('nada')).toBeNull();
     expect((await repo.listDiagnostics({ siteId: 'site-b' })).map(d => d.id)).toEqual(['d2']);
     expect(await repo.listSites()).toEqual(['site-a', 'site-b']);
   });

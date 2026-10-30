@@ -24,6 +24,11 @@ const MIGRATIONS: string[][] = [
       created_at TEXT NOT NULL, next_attempt_at TEXT, last_error TEXT)`,
     'CREATE INDEX IF NOT EXISTS idx_outbox_state ON outbox(state, next_attempt_at)',
   ],
+  // 2: configuración local (por ejemplo, la URL del backend de sincronización).
+  [
+    `CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
+  ],
 ];
 
 export async function migrate(db: SqlDatabase): Promise<number> {

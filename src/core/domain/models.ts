@@ -71,6 +71,8 @@ export interface OutboxAction {
   attempts: number;
   createdAt: IsoDate;
   nextAttemptAt?: IsoDate;
+  // Motivo del último intento fallido o del conflicto, para mostrarlo al técnico.
+  lastError?: string;
 }
 
 export interface TechnicalSheet {

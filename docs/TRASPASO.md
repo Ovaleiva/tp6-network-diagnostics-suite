@@ -275,11 +275,60 @@ bundle"). Por eso la app se abrió con red y el modo avión se activó después.
 Abrir la app desde cero sin red se debe repetir con el **APK release**, que
 incluye el bundle completo.
 
+## Paso 7 — Sincronización, RF07 (EN CURSO, 29/10)
+
+Hecho y probado en Node/Jest (todavía no en el emulador):
+
+- `backend/server.cjs` (`npm.cmd run backend`, pruebas `npm.cmd run test:backend`,
+  11/11): Node sin dependencias, solo 127.0.0.1:3000 (emulador:
+  `http://10.0.2.2:3000`). Persiste en `tmp/backend/state.json` y
+  `tmp/backend/files/` (escritura atómica), así que **conserva el estado al
+  reiniciarse**. `GET /health`; `POST /sync/actions` idempotente por `actionId`
+  (mismo id con otro contenido → 422), 409 si el servidor tiene una revisión
+  mayor o la misma con otro contenido, 422 si falta un archivo referenciado;
+  `POST /sync/files` en JSON con base64 y SHA-256 verificado (solo JPEG y PDF,
+  máx. 20 MB); `GET /technical-sheets/:code` con dos fichas de ejemplo para RF04
+  (`TP6-ONT-001`, `TP6-RTR-002`). `backend/` se agregó al lint.
+- Repositorio: migración 2 (tabla `settings`), `getSetting`/`setSetting`,
+  `findDiagnostic`, `markRejected` (error permanente → `failed` sin reintento
+  automático), `discard` (descarta la acción, conserva la entidad) y
+  `lastError` en `OutboxAction`.
+- `src/features/sync/syncEngine.ts` (lógica pura): health primero (sin backend
+  no toca la cola); por acción `markSending` → sube archivos (fotos con
+  `fileId` = id de la foto, PDF con `fileId` = id del reporte, sin rutas locales)
+  → acción. ok → `markSent`; 409 → `markConflict`; rechazo → `markRejected`;
+  temporal → `markFailed` (espera creciente) y **corta la ronda**.
+- `src/features/sync/httpTransport.ts`: `fetch` con timeout; 2xx ok, 409
+  conflicto, 408/429/5xx y errores de red temporales, otros 4xx permanentes.
+  `DEFAULT_BACKEND_URL` y `normalizeBackendUrl`.
+- `test-support/memoryDb.ts`: SQLite en memoria compartido por las pruebas.
+- Pruebas: `sync-engine.test.ts` (unitarias + integración contra el backend
+  real: envío completo, reenvío tras cierre sin duplicar, conflicto y descarte,
+  backend apagado) y `local-store.test.ts` ampliado.
+
+Falta (siguiente sesión):
+
+1. Instalar `@react-native-community/netinfo` 12.0.1 (señal para reintentar al
+   volver la red; la disponibilidad real la decide `/health`). La instalación se
+   interrumpió: **no está en package.json**.
+2. `src/infrastructure/sync/`: lector de archivos (RNFS `readFile` base64 +
+   `hash` sha256) y servicio con el repositorio, el transporte HTTP y la URL
+   guardada en `settings` (`backendUrl`).
+3. Controlador: una sola ronda a la vez; dispara al abrir la app, al volver la
+   red (NetInfo), cada 60 s con la app abierta y con "Sincronizar ahora".
+4. Pantalla Sincronización: URL del backend, estado de la última ronda,
+   pendientes (intentos y próximo intento), conflictos con "Descartar (conserva
+   los datos locales)", fallidas con "Reintentar" (`retryFailed`). Montar el
+   controlador en `App.tsx`.
+5. Prueba en emulador: backend arriba → enviar las 7 acciones (2 SNMP, 3 SSH,
+   instalación con 2 fotos, reporte PDF) y revisar `tmp/backend`; backend caído
+   → reintento con espera; conflicto creado con otro POST de revisión mayor.
+6. APK release: `usesCleartextTraffic` es false en release y el backend de
+   laboratorio usa HTTP; decidir y documentar antes de armar el APK.
+
 ## Plan restante
 
-5. RF07 — backend stub (ver backend/README.md) + servicio de sync con NetInfo:
-   `listReadyActions` → `markSending` → enviar → `markSent` / `markFailed` /
-   `markConflict` (HTTP 409 por revisión vieja). Pantalla Sincronización.
+5. RF07 — completar lo pendiente del Paso 7.
 6. RF04 — QR/barras con el code scanner de vision-camera; asociar a ficha técnica.
 7. Pruebas con teléfono físico en la LAN: RF01 (equipo real y MAC), RF02 (SNMP
    a un equipo de red), RF03 (SSH a un equipo real).

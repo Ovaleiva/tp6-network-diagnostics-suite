@@ -5,7 +5,7 @@
   "scripts": {
     "android": "node scripts/android.cjs run",
     "ios": "react-native run-ios",
-    "lint": "eslint App.tsx index.js src __tests__ scripts *.config.js jest.setup.js --ext .js,.ts,.tsx,.cjs",
+    "lint": "eslint App.tsx index.js src __tests__ scripts backend *.config.js jest.setup.js --ext .js,.ts,.tsx,.cjs",
     "start": "react-native start",
     "test": "jest",
     "typecheck": "tsc --noEmit",
@@ -17,7 +17,9 @@
     "lab:snmp": "node scripts/snmp-lab.cjs",
     "test:snmp-lab": "node --test scripts/snmp-lab.test.cjs",
     "lab:ssh": "node scripts/ssh-lab.cjs",
-    "test:ssh-lab": "node --test scripts/ssh-lab.test.cjs"
+    "test:ssh-lab": "node --test scripts/ssh-lab.test.cjs",
+    "backend": "node backend/server.cjs",
+    "test:backend": "node --test backend/server.test.cjs"
   },
   "codegenConfig": {
     "name": "NetworkDiscoverySpec",

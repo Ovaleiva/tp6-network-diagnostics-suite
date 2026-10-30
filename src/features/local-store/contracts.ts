@@ -12,6 +12,7 @@ export interface LocalRepository {
   findDevice(id: EntityId): Promise<Device | null>;
   listDevices(siteId: EntityId): Promise<Device[]>;
   listSites(): Promise<EntityId[]>;
+  findDiagnostic(id: EntityId): Promise<Diagnostic | null>;
   listDiagnostics(filter: {
     deviceId?: EntityId;
     siteId?: EntityId;
@@ -35,6 +36,8 @@ export interface LocalRepository {
     action: OutboxAction,
   ): Promise<void>;
   listPendingActions(): Promise<OutboxAction[]>;
+  getSetting(key: string): Promise<string | null>;
+  setSetting(key: string, value: string): Promise<void>;
 }
 
 // Operaciones de la cola que usa solo la capa de sincronización.
@@ -45,6 +48,10 @@ export interface OutboxStore {
   markSent(id: EntityId): Promise<void>;
   markFailed(id: EntityId, error: string, now: Date): Promise<void>;
   markConflict(id: EntityId, error: string): Promise<void>;
+  // Error permanente (el backend rechazó los datos): queda 'failed' sin reintento automático.
+  markRejected(id: EntityId, error: string): Promise<void>;
+  // El técnico descarta la acción; la entidad local se conserva.
+  discard(id: EntityId): Promise<void>;
   // Si la app se cerró en pleno envío, esas acciones vuelven a 'pending'.
   recoverInterrupted(): Promise<number>;
   retryFailed(): Promise<number>;
