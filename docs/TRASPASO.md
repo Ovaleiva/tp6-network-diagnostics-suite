@@ -518,3 +518,9 @@ Compilación debug solo para x86_64 en 3 min 8 s:
 - Lógica pura en `src/core` o archivos de feature sin React Native, con pruebas.
 - Adaptadores nativos en `src/infrastructure`, inyectables en pantallas para tests.
 - Correr `npm.cmd run verify` antes de cada commit.
+- Después de cambiar `docs/INFORME_TECNICO.md`, regenerar el PDF con
+  `npm.cmd run docs:pdf` (`scripts/informe-pdf.cjs`: marked + Mermaid +
+  Chrome o Edge sin ventana; otro navegador con `CHROME_PATH`) y commitear los
+  dos archivos juntos.
+- Si `pnpm add` falla con EPERM o ENOENT en una carpeta `*_tmp_*`, detener
+  Metro (vigila `node_modules`), borrar esas carpetas y reintentar.
