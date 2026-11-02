@@ -47,10 +47,15 @@ function setup(actions: OutboxAction[], summary?: SyncSummary) {
   return { repository, controller, round, settings };
 }
 
-async function render(services: { repository: LocalRepository & OutboxStore; controller: SyncController }) {
+async function render(
+  services: { repository: LocalRepository & OutboxStore; controller: SyncController },
+  isDebugBuild = true,
+) {
   let screen!: ReactTestRenderer.ReactTestRenderer;
   await act(async () => {
-    screen = ReactTestRenderer.create(<SyncScreen services={services} />);
+    screen = ReactTestRenderer.create(
+      <SyncScreen services={services} isDebugBuild={isDebugBuild} />,
+    );
   });
   return screen;
 }
@@ -133,10 +138,36 @@ test('valida y guarda la URL del backend', async () => {
   expect(text(screen)).toContain('URL inválida');
   expect(deps.repository.setSetting).not.toHaveBeenCalled();
 
-  await act(async () => input().props.onChangeText(' http://192.168.0.10:3000/ '));
+  await act(async () => input().props.onChangeText(' http://127.0.0.1:3000/ '));
+  await press(screen, 'Guardar URL');
+  expect(deps.settings.backendUrl).toBe('http://127.0.0.1:3000');
+  expect(input().props.value).toBe('http://127.0.0.1:3000');
+  expect(text(screen)).toContain('URL guardada. Se usa desde la próxima ronda.');
+});
+
+test('en debug guarda HTTP hacia otro host pero avisa que release lo bloquea', async () => {
+  const deps = setup([]);
+  const screen = await render(deps);
+  const input = screen.root.findByProps({ accessibilityLabel: 'URL del backend' });
+  await act(async () => input.props.onChangeText('http://192.168.0.10:3000'));
   await press(screen, 'Guardar URL');
   expect(deps.settings.backendUrl).toBe('http://192.168.0.10:3000');
-  expect(input().props.value).toBe('http://192.168.0.10:3000');
+  expect(text(screen)).toContain('URL guardada para esta compilación debug.');
+  expect(text(screen)).toContain('El APK release solo permite HTTP');
+});
+
+test('en release rechaza HTTP hacia otro host y acepta HTTPS', async () => {
+  const deps = setup([]);
+  const screen = await render(deps, false);
+  const input = () => screen.root.findByProps({ accessibilityLabel: 'URL del backend' });
+  await act(async () => input().props.onChangeText('http://192.168.0.10:3000'));
+  await press(screen, 'Guardar URL');
+  expect(deps.repository.setSetting).not.toHaveBeenCalled();
+  expect(text(screen)).toContain('El APK release solo permite HTTP');
+
+  await act(async () => input().props.onChangeText('https://backend.example.com'));
+  await press(screen, 'Guardar URL');
+  expect(deps.settings.backendUrl).toBe('https://backend.example.com');
 });
 
 test('muestra las rondas automáticas que terminan con la pantalla abierta', async () => {

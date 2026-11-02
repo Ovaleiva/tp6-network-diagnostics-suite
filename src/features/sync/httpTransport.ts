@@ -9,6 +9,15 @@ export function normalizeBackendUrl(input: string): string | null {
   return /^https?:\/\/[A-Za-z0-9.-]+(:\d{1,5})?$/u.test(value) ? value : null;
 }
 
+// Hosts con HTTP permitido en release (res/xml/network_security_config.xml).
+export const RELEASE_HTTP_HOSTS = ['10.0.2.2', '127.0.0.1', 'localhost'];
+
+// true si el APK release bloquearía esta URL normalizada: HTTP hacia otro host.
+export function releaseBlocksHttp(url: string): boolean {
+  const match = /^http:\/\/([^:/]+)/u.exec(url);
+  return !!match && !RELEASE_HTTP_HOSTS.includes(match[1]!.toLowerCase());
+}
+
 // Clasifica la respuesta HTTP según qué hacer con la acción.
 export function outcomeFor(status: number, message: string): SendOutcome {
   if (status >= 200 && status < 300) return { kind: 'ok' };

@@ -3,7 +3,11 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Screen } from '../../shared/components/Screen';
 import { colors } from '../../shared/theme';
 import type { LocalRepository, OutboxStore } from '../local-store/contracts';
-import { BACKEND_URL_SETTING, normalizeBackendUrl } from './httpTransport';
+import {
+  BACKEND_URL_SETTING,
+  normalizeBackendUrl,
+  releaseBlocksHttp,
+} from './httpTransport';
 import {
   backendUrlOf,
   type SyncController,
@@ -19,7 +23,13 @@ type Services = {
 type Props = {
   // Se inyectan en pruebas; en la app se cargan la base SQLite y el controlador Android.
   services?: Services;
+  // Debug permite HTTP hacia cualquier host (Metro lo necesita); release no.
+  isDebugBuild?: boolean;
 };
+
+const RELEASE_HTTP_HINT =
+  'El APK release solo permite HTTP hacia 10.0.2.2 (emulador) o 127.0.0.1 con ' +
+  '"adb reverse tcp:3000 tcp:3000"; para otro host use HTTPS.';
 
 async function defaultServices(): Promise<Services> {
   const { getSyncServices } = await import('../../infrastructure/sync/androidSync');
@@ -30,7 +40,7 @@ function message(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-export function SyncScreen({ services }: Props) {
+export function SyncScreen({ services, isDebugBuild = __DEV__ }: Props) {
   const [deps, setDeps] = useState(services);
   const [sync, setSync] = useState<SyncState>();
   // undefined mientras se abre la base.
@@ -73,10 +83,19 @@ export function SyncScreen({ services }: Props) {
       setError('URL inválida. Use http://host:puerto o https://host, sin ruta.');
       return;
     }
+    const blocked = releaseBlocksHttp(normalized);
+    if (blocked && !isDebugBuild) {
+      setError(RELEASE_HTTP_HINT);
+      return;
+    }
     try {
       await deps.repository.setSetting(BACKEND_URL_SETTING, normalized);
       setUrl(normalized);
-      setStatus('URL guardada. Se usa desde la próxima ronda.');
+      setStatus(
+        blocked
+          ? `URL guardada para esta compilación debug. ${RELEASE_HTTP_HINT}`
+          : 'URL guardada. Se usa desde la próxima ronda.',
+      );
     } catch (e) {
       setError(message(e));
     }

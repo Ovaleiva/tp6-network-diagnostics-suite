@@ -1,6 +1,11 @@
 import type { OutboxAction } from '../src/core/domain/models';
 import { createOutboxAction } from '../src/core/sync/outboxAction';
-import { BACKEND_URL_SETTING, createHttpTransport } from '../src/features/sync/httpTransport';
+import {
+  BACKEND_URL_SETTING,
+  RELEASE_HTTP_HOSTS,
+  createHttpTransport,
+  releaseBlocksHttp,
+} from '../src/features/sync/httpTransport';
 import {
   backendUrlOf,
   createSyncController,
@@ -100,6 +105,28 @@ describe('controlador de sincronización', () => {
     controller.stop();
     jest.advanceTimersByTime(180_000);
     expect(round).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('HTTP en release', () => {
+  it('solo permite HTTP hacia la PC del laboratorio', () => {
+    expect(releaseBlocksHttp('http://10.0.2.2:3000')).toBe(false);
+    expect(releaseBlocksHttp('http://127.0.0.1:3000')).toBe(false);
+    expect(releaseBlocksHttp('http://LOCALHOST:3000')).toBe(false);
+    expect(releaseBlocksHttp('http://192.168.0.10:3000')).toBe(true);
+    expect(releaseBlocksHttp('http://10.0.2.20')).toBe(true);
+    expect(releaseBlocksHttp('https://192.168.0.10')).toBe(false);
+  });
+
+  it('coincide con network_security_config.xml', () => {
+    // Jest corre desde la raíz del proyecto.
+    const xml: string = require('fs').readFileSync(
+      'android/app/src/main/res/xml/network_security_config.xml',
+      'utf8',
+    );
+    expect(xml).toContain('<base-config cleartextTrafficPermitted="false" />');
+    const hosts = [...xml.matchAll(/<domain [^>]*>([^<]+)<\/domain>/gu)].map(m => m[1]);
+    expect(hosts.sort()).toEqual([...RELEASE_HTTP_HOSTS].sort());
   });
 });
 

@@ -275,7 +275,7 @@ bundle"). Por eso la app se abrió con red y el modo avión se activó después.
 Abrir la app desde cero sin red se debe repetir con el **APK release**, que
 incluye el bundle completo.
 
-## Paso 7 — Sincronización, RF07 (HECHO y probado en emulador; falta HTTP en release)
+## Paso 7 — Sincronización, RF07 (HECHO y probado en emulador, también en release)
 
 Hecho el 29/10 y probado en Node/Jest:
 
@@ -374,19 +374,70 @@ Observaciones:
 - El texto de la cola vacía pasó a "No hay envíos pendientes." Después de
   descartar un conflicto, "todo está en el backend" no era cierto.
 
-Falta:
+### HTTP en el APK release (02/11, HECHO y probado en emulador)
 
-1. APK release: `usesCleartextTraffic` es false en release y el backend de
-   laboratorio usa HTTP; decidir y documentar antes de armar el APK.
+Decisión (justificar en el informe): en release, HTTP sin cifrar está
+bloqueado salvo hacia la PC del laboratorio. No se habilitó HTTP en general:
+las fotos, el PDF y los diagnósticos viajarían sin cifrar por la red de la
+obra.
+
+- `android/app/src/main/res/xml/network_security_config.xml`: `base-config`
+  con `cleartextTrafficPermitted="false"` y HTTP permitido solo para
+  `10.0.2.2` (la PC vista desde el emulador), `127.0.0.1` y `localhost`. En un
+  teléfono físico se usa `adb reverse tcp:3000 tcp:3000` con la URL
+  `http://127.0.0.1:3000`, sin depender de la IP de la PC en la LAN. Otro
+  backend tiene que usar HTTPS. SNMP (UDP) y SSH no pasan por esta política.
+- `src/debug/res/xml/network_security_config.xml` la reemplaza en debug con
+  HTTP permitido, porque Metro sirve el JavaScript por HTTP.
+- El manifest usa `android:networkSecurityConfig` en lugar del placeholder
+  `usesCleartextTraffic` del plugin de React Native (con minSdk 26 la política
+  manda igual).
+- `httpTransport.ts`: `RELEASE_HTTP_HOSTS` y `releaseBlocksHttp`. Una prueba
+  verifica que la lista coincide con el XML. La pantalla de Sincronización, en
+  release, rechaza guardar una URL HTTP hacia otro host; en debug la guarda y
+  avisa que el APK release la bloquearía.
+
+Armar el APK: con la terminal preparada (ver "Compilar desde la terminal de
+Claude Code"), `cd android; .\gradlew.bat assembleRelease`. Lo firma la clave
+debug (`signingConfigs.debug`), así que se instala encima de la compilación
+debug y conserva los datos. Pesa 108 MB porque incluye las 4 ABI.
+`aapt2 dump xmltree` confirmó que el APK no es `debuggable` y empaqueta la
+política restrictiva. Copia del APK probado:
+`D:/Android/apk/tp6-release-2026-11-02.apk`.
+
+Prueba en emulador con el APK release:
+
+- **Arranque en modo avión** (pendiente del Paso 6): la app abrió sin red, y
+  Historial mostró los 6 diagnósticos con los filtros por sitio
+  (`docs/evidencia/historial-release-modo-avion-android.png`). Sincronización
+  informó "Backend no disponible".
+- **HTTP a `10.0.2.2`:** al desactivar el modo avión, la ronda "al volver la
+  red" llegó al backend (`GET /health -> 200` un segundo después).
+- **HTTP a `127.0.0.1` con `adb reverse`:** se guardó la URL. Sin el reverse,
+  "Sincronizar ahora" dio "Backend no disponible"; con el reverse,
+  `/health -> 200`.
+- **HTTP hacia la LAN:** `http://192.168.0.10:3000` fue rechazada al guardar
+  (`docs/evidencia/release-http-bloqueado-android.png`). La URL se volvió a
+  `http://10.0.2.2:3000`.
+- Release no es depurable: `run-as` no sirve para leer la base. La prueba se
+  verificó con la pantalla y el registro del backend.
+
+**Espacio en disco:** después de `assembleRelease`, C: quedó sin espacio
+libre. Las carpetas `android/build` de `node_modules` y `android/app/build`
+ocupaban ~24 GB (vision-camera sola, 7 GB). Se borraron (se regeneran al
+compilar) y C: quedó con 22 GB libres. Antes de otra compilación release,
+revisar el espacio libre o compilar solo la ABI necesaria con
+`-PreactNativeArchitectures=x86_64` (emulador) o `arm64-v8a` (teléfono).
 
 ## Plan restante
 
-5. RF07 — implementado y probado en emulador; queda decidir HTTP en release.
+5. RF07 — HECHO (incluye HTTP en release).
 6. RF04 — QR/barras con el code scanner de vision-camera; asociar a ficha técnica.
 7. Pruebas con teléfono físico en la LAN: RF01 (equipo real y MAC), RF02 (SNMP
    a un equipo de red), RF03 (SSH a un equipo real).
-8. Entregables: APK release (repetir ahí la prueba de Historial abriendo la app
-   en modo avión), informe técnico (SNMP, credenciales SSH, outbox), video demo.
+8. Entregables: APK release final (la prueba de Historial en modo avión ya se
+   hizo el 02/11), informe técnico (SNMP, credenciales SSH, outbox, HTTP en
+   release), video demo.
 
 ## Convenciones del proyecto
 
