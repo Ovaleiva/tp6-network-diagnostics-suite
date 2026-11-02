@@ -53,7 +53,7 @@ const modules: ReadonlyArray<{
     title: 'Sincronización',
     description: 'Acciones pendientes de envío al backend.',
     requirement: 'RF-07',
-    status: 'PENDIENTE DE IMPLEMENTACIÓN',
+    status: 'COLA CON REINTENTOS Y CONFLICTOS',
   },
   {
     route: 'History',
@@ -78,13 +78,15 @@ export function HomeScreen({
       </Text>
       <View style={styles.notice}>
         <Text style={styles.noticeTitle}>
-          En desarrollo · mDNS, SNMP, SSH, instalaciones, PDF e historial
+          En desarrollo · mDNS, SNMP, SSH, instalaciones, PDF, historial y
+          sincronización
         </Text>
         <Text style={styles.description}>
           Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP y
           SSH, Instalación registra fotos, GPS y notas sin conexión, Reportes
-          genera su PDF e Historial los consulta sin red. Identificación y
-          sincronización todavía están pendientes.
+          genera su PDF, Historial los consulta sin red y Sincronización los
+          envía al backend cuando responde. Identificación todavía está
+          pendiente.
         </Text>
       </View>
       {modules.map(module => (

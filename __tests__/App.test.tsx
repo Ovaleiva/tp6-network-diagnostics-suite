@@ -9,6 +9,7 @@ import { InstallationScreen } from '../src/features/evidence/InstallationScreen'
 import { ReportsScreen } from '../src/features/reporting/ReportsScreen';
 import { SshScreen } from '../src/features/protocols/SshScreen';
 import { HistoryScreen } from '../src/features/history/HistoryScreen';
+import { SyncScreen } from '../src/features/sync/SyncScreen';
 
 jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
   __esModule: true,
@@ -26,7 +27,18 @@ jest.mock('../src/infrastructure/storage/opSqlite', () => ({
   getRepository: jest.fn().mockResolvedValue({
     listInstallations: jest.fn().mockResolvedValue([]),
     listReports: jest.fn().mockResolvedValue([]),
+    listPendingActions: jest.fn().mockResolvedValue([]),
+    getSetting: jest.fn().mockResolvedValue(null),
   }),
+}));
+
+jest.mock('../src/infrastructure/sync/androidSync', () => ({
+  startAutoSync: jest.fn(() => jest.fn()),
+  getSyncController: jest.fn(() => ({
+    getState: () => ({ running: false }),
+    subscribe: () => () => {},
+    syncNow: jest.fn(),
+  })),
 }));
 
 jest.mock('../src/infrastructure/evidence/androidEvidence', () => ({
@@ -59,7 +71,6 @@ test('inicia en Inicio sin montar servicios ni pantallas de diagnóstico', () =>
 
 test.each([
   ['Identificar equipo', 'Identificar equipo', 'RF-04'],
-  ['Sincronización', 'Sincronización', 'RF-07'],
 ])('abre %s y permite volver a Inicio', async (label, title, requirement) => {
   const button = app.root.findAll(
     node =>
@@ -138,6 +149,21 @@ test('Historial abre la consulta local y permite volver a Inicio', async () => {
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(HistoryScreen)).toHaveLength(0);
+});
+
+test('Sincronización abre la cola y permite volver a Inicio', async () => {
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.navigate('Sync');
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(SyncScreen)).toHaveLength(1);
+  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
+  expect(JSON.stringify(app.toJSON())).toContain('RF-07 · SINCRONIZACIÓN');
+  await act(async () => {
+    app.root.findByType(HomeScreen).props.navigation.goBack();
+    jest.runAllTimers();
+  });
+  expect(app.root.findAllByType(SyncScreen)).toHaveLength(0);
 });
 
 test('Diagnóstico recibe el identificador del equipo por la ruta', async () => {

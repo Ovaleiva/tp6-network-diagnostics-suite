@@ -1,4 +1,4 @@
-# Traspaso de trabajo (29/10/2026)
+# Traspaso de trabajo (02/11/2026)
 
 Contexto para continuar el TP6 en otra sesión (por ejemplo, Claude Code).
 Leer también README.md, docs/ALCANCE.md y docs/ARQUITECTURA.md.
@@ -275,9 +275,9 @@ bundle"). Por eso la app se abrió con red y el modo avión se activó después.
 Abrir la app desde cero sin red se debe repetir con el **APK release**, que
 incluye el bundle completo.
 
-## Paso 7 — Sincronización, RF07 (EN CURSO, 29/10)
+## Paso 7 — Sincronización, RF07 (HECHO y probado en emulador; falta HTTP en release)
 
-Hecho y probado en Node/Jest (todavía no en el emulador):
+Hecho el 29/10 y probado en Node/Jest:
 
 - `backend/server.cjs` (`npm.cmd run backend`, pruebas `npm.cmd run test:backend`,
   11/11): Node sin dependencias, solo 127.0.0.1:3000 (emulador:
@@ -306,29 +306,82 @@ Hecho y probado en Node/Jest (todavía no en el emulador):
   real: envío completo, reenvío tras cierre sin duplicar, conflicto y descarte,
   backend apagado) y `local-store.test.ts` ampliado.
 
-Falta (siguiente sesión):
+Hecho el 01/11 (Jest: 162/162, `verify` OK):
 
-1. Instalar `@react-native-community/netinfo` 12.0.1 (señal para reintentar al
-   volver la red; la disponibilidad real la decide `/health`). La instalación se
-   interrumpió: **no está en package.json**.
-2. `src/infrastructure/sync/`: lector de archivos (RNFS `readFile` base64 +
-   `hash` sha256) y servicio con el repositorio, el transporte HTTP y la URL
-   guardada en `settings` (`backendUrl`).
-3. Controlador: una sola ronda a la vez; dispara al abrir la app, al volver la
-   red (NetInfo), cada 60 s con la app abierta y con "Sincronizar ahora".
-4. Pantalla Sincronización: URL del backend, estado de la última ronda,
-   pendientes (intentos y próximo intento), conflictos con "Descartar (conserva
-   los datos locales)", fallidas con "Reintentar" (`retryFailed`). Montar el
-   controlador en `App.tsx`.
-5. Prueba en emulador: backend arriba → enviar las 7 acciones (2 SNMP, 3 SSH,
-   instalación con 2 fotos, reporte PDF) y revisar `tmp/backend`; backend caído
-   → reintento con espera; conflicto creado con otro POST de revisión mayor.
-6. APK release: `usesCleartextTraffic` es false en release y el backend de
+- `@react-native-community/netinfo` 12.0.1 instalado. Solo se usa como señal
+  para reintentar al volver la red; si el backend responde lo decide `/health`.
+- `src/features/sync/syncController.ts` (lógica pura): una sola ronda a la vez
+  (`syncNow` devuelve la ronda en curso si ya hay una). Dispara al abrir la app
+  y al volver a primer plano (`start`), cada 60 s en primer plano, al pasar de
+  sin red a con red (`networkChanged`) y con "Sincronizar ahora". `stop` en
+  segundo plano. `createSyncRound` lee `backendUrl` de `settings` en cada
+  ronda (URL inválida o sin guardar → `http://10.0.2.2:3000`).
+- `src/features/sync/syncView.ts`: agrupa la cola (pendientes, en conflicto,
+  fallidas) y describe la última ronda.
+- `src/infrastructure/sync/androidSync.ts`: lector de archivos (RNFS
+  `readFile` base64 + `hash` sha256 en hex), controlador único por proceso y
+  `startAutoSync` (NetInfo + AppState). `App.tsx` lo monta con `import()`.
+- `SyncScreen`: URL del backend (valida y guarda), "Sincronizar ahora", estado
+  de la última ronda, pendientes con intentos y próximo intento, conflictos con
+  "Descartar (conserva los datos locales)" y "Reintentar fallidas".
+- Se borró `src/features/sync/contracts.ts` (sin uso).
+- Pruebas: `sync-controller.test.ts` (controlador, vista y ronda contra el
+  backend real), `sync-screen.test.tsx` (7) y App.
+- En Jest los `import()` dinámicos fallan
+  (`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`), así que el test de App solo
+  verifica que la pantalla abre; la lógica se prueba inyectando servicios.
+- Compilar desde la terminal de Claude Code: esa terminal define
+  `NoDefaultCurrentDirectoryInExePath=1` y cmd no encuentra `gradlew.bat`
+  ("no se reconoce como un comando"). Antes de `npm.cmd run android`:
+  `Remove-Item Env:NoDefaultCurrentDirectoryInExePath`. Si Metro ya corre,
+  agregar `-- --no-packager`.
+
+### Prueba en emulador (02/11, HECHA)
+
+Compilación nativa con NetInfo: 16 min 12 s. Partiendo de las 7 acciones
+pendientes de los pasos anteriores:
+
+- **Backend caído:** la ronda al abrir la app mostró "Backend no disponible:
+  los cambios siguen guardados en el teléfono." Las 7 acciones siguieron en
+  `pending` con 0 intentos (sin backend no se gastan intentos).
+- **Backend arriba (`npm.cmd run backend`):** la ronda periódica envió todo en
+  14 s: 7 `POST /sync/actions` y 3 `POST /sync/files` con 200. En
+  `tmp/backend` quedaron 7 entidades y 3 archivos (2 JPEG de 133 KB y el PDF
+  de 269 KB) con el mismo SHA-256 que `sha256sum` en el teléfono. El estado no
+  contiene `file://`, rutas locales ni la comunidad SNMP. Pantalla: "No hay
+  envíos pendientes."
+- **Conflicto al volver la red:** con el backend caído se hizo una consulta
+  SNMP nueva (pendiente, revisión 1). Con el emulador en modo avión se levantó
+  el backend y se le envió la revisión 2 de ese diagnóstico ("Editado desde
+  otro equipo"). Al desactivar el modo avión, NetInfo disparó una ronda fuera
+  del ciclo de 60 s (`/health` y `POST /sync/actions -> 409` a las 00:38:10;
+  las periódicas van al segundo :01). La pantalla mostró "En conflicto (1) ·
+  El servidor ya tiene la revisión 2 de esta entidad."
+  (`docs/evidencia/sincronizacion-conflicto-android.png`). "Sincronizar ahora"
+  hizo una ronda manual que no reenvió el conflicto. "Descartar" vació la cola;
+  el diagnóstico siguió en la base del teléfono y el backend conservó su
+  revisión 2.
+
+Observaciones:
+
+- En debug, la primera vez que se abrió Sincronización mientras App todavía
+  descargaba de Metro el bloque de `androidSync`, la pantalla pidió dos
+  `import()` que se solapaban y quedó en "Cargando cola…". Ahora la pantalla
+  importa solo `androidSync` (`getSyncServices`), y con la caché de Metro
+  limpia abrió bien a los 3 s.
+- En modo avión, la app debug muestra el aviso "Cannot connect to Metro". Es
+  esperable.
+- El texto de la cola vacía pasó a "No hay envíos pendientes." Después de
+  descartar un conflicto, "todo está en el backend" no era cierto.
+
+Falta:
+
+1. APK release: `usesCleartextTraffic` es false en release y el backend de
    laboratorio usa HTTP; decidir y documentar antes de armar el APK.
 
 ## Plan restante
 
-5. RF07 — completar lo pendiente del Paso 7.
+5. RF07 — implementado y probado en emulador; queda decidir HTTP en release.
 6. RF04 — QR/barras con el code scanner de vision-camera; asociar a ficha técnica.
 7. Pruebas con teléfono físico en la LAN: RF01 (equipo real y MAC), RF02 (SNMP
    a un equipo de red), RF03 (SSH a un equipo real).
