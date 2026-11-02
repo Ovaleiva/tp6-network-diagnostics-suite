@@ -1,5 +1,28 @@
 # Traspaso de trabajo (02/11/2026)
 
+## Dónde quedamos (02/11, noche)
+
+Se entrega con lo que hay: no hay teléfono Android (el personal es iPhone) ni
+equipo de red con SNMP/SSH. El router de la casa (PRV4439B, del proveedor)
+no ofrece SNMP en su interfaz de usuario. El informe ya lo refleja.
+
+- **APK final** (4 ABI, 125 MB) compilado desde `9fde2bf`:
+  `android/app/build/outputs/apk/release/app-release.apk`, con copia en
+  `D:/Android/apk/tp6-release-final-2026-11-02.apk`.
+  - Instalado en el emulador, abrió bien.
+  - SNMP contra el contenedor: OK.
+- **Informe:** `docs/INFORME_TECNICO.md` y su PDF (`npm.cmd run docs:pdf`).
+- **Guion del video:** `docs/VIDEO_DEMO.md`.
+
+Siguiente sesión:
+
+1. Grabar el video desde el emulador siguiendo `docs/VIDEO_DEMO.md`.
+   - Hace falta Docker Desktop con `npm.cmd run lab:linux`,
+     `npm.cmd run backend` y el emulador con `-camera-back webcam1`.
+   - Para el QR, alguien tiene que girar la webcam hacia el monitor.
+2. Unir los tramos en Clipchamp con los textos.
+3. Repasar el README (cómo correr labs, backend y app) y entregar.
+
 Contexto para continuar el TP6 en otra sesión (por ejemplo, Claude Code).
 Leer también README.md, docs/ALCANCE.md y docs/ARQUITECTURA.md.
 
