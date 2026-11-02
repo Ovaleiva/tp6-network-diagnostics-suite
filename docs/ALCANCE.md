@@ -32,9 +32,8 @@ Keystore y huella del servidor verificada) se validó contra un servidor de
 laboratorio; falta un equipo real. RF08 (historial por sitio y equipo) se consultó
 en modo avión con el APK release abierto sin red. RF07 (cola, reintentos,
 conflictos y envío al backend de laboratorio) se probó en el emulador, también
-con el APK release. RF04 busca la ficha técnica (con copia local para usarla sin
-red) a partir del código escrito a mano; falta leer el QR con la cámara de un
-teléfono físico.
+con el APK release. RF04 leyó el QR con la cámara (webcam de la PC en el
+emulador) y trajo la ficha técnica, con copia local para usarla sin red.
 Disponer de un tipo o una pantalla no demuestra que un requisito funciona.
 El descubrimiento también conserva el hostname resuelto que NSD devuelve en
 Android API 36+; en versiones anteriores o sin respuesta se muestra no disponible.

@@ -492,22 +492,42 @@ Compilación debug solo para x86_64 en 3 min 8 s:
   (`docs/evidencia/identificacion-ficha-sin-red-android.png`), y
   `TP6-NUEVO-01`: "No se pudo contactar al backend. La ficha de TP6-NUEVO-01
   nunca se descargó en este teléfono".
-- **Lectura con la cámara, sin probar:** la cámara trasera del AVD es la
-  escena virtual (`hw.camera.back=virtualscene`). Con
-  `-virtualscene-poster wall=<qr.png>` y con `adb emu virtualscene-image` el
-  QR no quedó a la vista: la escena de esta versión del emulador (una sala con
-  TV) arranca mirando a otro lado, y la cámara virtual se mueve con teclado y
-  mouse en la ventana del emulador (Alt + WASD), no por consola
-  (`sensor set orientation` no la mueve). Queda para el teléfono físico con
-  las etiquetas de `docs/etiquetas/`.
+- La escena virtual del AVD (`hw.camera.back=virtualscene`) no sirvió para
+  mostrar el QR: con `-virtualscene-poster wall=<qr.png>` y con
+  `adb emu virtualscene-image` el QR no quedó a la vista, porque la escena
+  arranca mirando a otro lado y la cámara virtual solo se mueve con teclado y
+  mouse en la ventana del emulador.
+
+### Lectura con la cámara usando la webcam (02/11, HECHA)
+
+El teléfono personal es un iPhone, que no instala el APK. Se usó la webcam de
+la PC como cámara trasera del emulador:
+
+```powershell
+& D:/Android/Sdk/emulator/emulator.exe -webcam-list
+& D:/Android/Sdk/emulator/emulator.exe -avd Pixel_10_Pro -no-snapshot-load -no-boot-anim -camera-back webcam1
+```
+
+`webcam0` es DroidCam (cámara virtual que solo funciona con su app abierta);
+`webcam1` es la webcam USB. Con `qr-TP6-ONT-001.png` en el monitor y la
+webcam apuntando a la pantalla:
+
+- "Escanear código" mostró la imagen de la webcam y leyó el QR.
+- La cámara se cerró sola y el campo quedó en `TP6-ONT-001`.
+- La ficha quedó "Ficha actualizada desde el backend"
+  (`docs/evidencia/identificacion-qr-webcam-android.png`).
+
+Es la lectura real con ML Kit sobre una cámara física. Lo único que no se
+probó es el hardware de cámara de un teléfono.
 
 ## Plan restante
 
 5. RF07 — HECHO (incluye HTTP en release).
-6. RF04 — HECHO; falta leer el QR con la cámara de un teléfono físico.
-7. Pruebas con teléfono físico en la LAN: RF04 (leer `docs/etiquetas/` con la
-   cámara), RF01 (equipo real y MAC), RF02 (SNMP a un equipo de red), RF03
-   (SSH a un equipo real).
+6. RF04 — HECHO, incluida la lectura con cámara (webcam en el emulador).
+7. Pruebas con equipos reales de la LAN: RF02 (SNMP) y RF03 (SSH) se pueden
+   hacer desde el emulador, que llega a las IP de la LAN por la PC. RF01
+   (descubrimiento mDNS) y el video necesitan un teléfono Android prestado: la
+   red virtual del emulador no recibe mDNS. Ver `docs/PRUEBAS_TELEFONO.md`.
 8. Entregables: APK release final (la prueba de Historial en modo avión ya se
    hizo el 02/11), informe técnico (SNMP, credenciales SSH, outbox, HTTP en
    release), video demo.

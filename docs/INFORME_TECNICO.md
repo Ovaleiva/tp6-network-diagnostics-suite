@@ -15,7 +15,7 @@ comandos, está en [TRASPASO.md](TRASPASO.md) y [VERIFICACION.md](VERIFICACION.m
 | RF-01 | Busca servicios mDNS/DNS-SD en la LAN y lista IP, hostname (si NSD lo entrega) y servicios | Motor nativo con un servicio controlado y recorrido en el emulador | Un equipo físico de la LAN. La MAC no se puede obtener en Android 10+ (ver 6.1) |
 | RF-02 | GetRequest SNMPv2c propio: sysName, sysUpTime, ifInOctets e ifOutOctets | Códec con pruebas de bytes; emulador → agente de laboratorio en la PC por UDP real | Un equipo de red físico |
 | RF-03 | SSH con comandos predefinidos, contraseña cifrada con el Keystore y huella del servidor verificada | Emulador → servidor SSH de laboratorio, incluido el cambio de huella | Un equipo real (Linux/OpenWrt, Cisco o MikroTik) |
-| RF-04 | Lee QR/barras y muestra la ficha técnica del backend, con copia local para usarla sin red | Búsqueda por código en el emulador: backend, código desconocido y modo avión | Leer el QR con la cámara de un teléfono físico |
+| RF-04 | Lee QR/barras y muestra la ficha técnica del backend, con copia local para usarla sin red | QR leído con cámara real (webcam de la PC en el emulador); backend, código desconocido y modo avión | — |
 | RF-05 | Instalación con fotos, GPS y notas, guardada en el teléfono | Emulador con GPS simulado | — |
 | RF-06 | PDF de la instalación con notas, coordenadas y fotos, generado en el teléfono | Emulador: PDF de 2 páginas abierto con el visor del sistema | — |
 | RF-07 | Cola outbox persistente, envío al backend con reintentos y conflictos | Emulador (debug y release): backend caído, envío completo, conflicto al volver la red | — |
@@ -378,9 +378,8 @@ anuncios de la LAN).
 
 ## 8. Limitaciones y trabajo pendiente
 
-- Pruebas con un teléfono físico en la LAN: descubrimiento de un equipo real,
-  SNMP a un equipo de red, SSH a un equipo real y lectura de QR con la cámara
-  (etiquetas en [etiquetas/](etiquetas/)).
+- Pruebas con equipos reales de la LAN: descubrimiento de un equipo real (con
+  un teléfono Android), SNMP a un equipo de red y SSH a un equipo real.
 - SNMP sin v3: sin autenticación ni cifrado. Para producción correspondería
   SNMPv3 (USM).
 - El backend es un stub de laboratorio: sin autenticación de usuarios ni HTTPS.

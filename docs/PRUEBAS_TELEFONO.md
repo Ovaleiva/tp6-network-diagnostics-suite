@@ -163,6 +163,10 @@ Si no aparece nada:
 
 ## 4. RF04 · QR con la cámara
 
+Ya se probó el 02/11 con la webcam de la PC como cámara del emulador (ver
+`TRASPASO.md`, Paso 8). En el teléfono es opcional, pero conviene hacerlo si
+se lo incluye en el video.
+
 - [ ] Identificar equipo > "Escanear código" > aceptar el permiso de cámara.
 - [ ] Apuntar a `qr-TP6-ONT-001.png`:
       - la cámara se cierra sola;
