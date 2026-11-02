@@ -13,8 +13,8 @@ comandos, está en [TRASPASO.md](TRASPASO.md) y [VERIFICACION.md](VERIFICACION.m
 | ID | Qué hace la app | Verificado | Pendiente |
 | --- | --- | --- | --- |
 | RF-01 | Busca servicios mDNS/DNS-SD en la LAN y lista IP, hostname (si NSD lo entrega) y servicios | Motor nativo con un servicio controlado y recorrido en el emulador | Un equipo físico de la LAN. La MAC no se puede obtener en Android 10+ (ver 6.1) |
-| RF-02 | GetRequest SNMPv2c propio: sysName, sysUpTime, ifInOctets e ifOutOctets | Códec con pruebas de bytes; emulador → agente de laboratorio en la PC por UDP real | Un equipo de red físico |
-| RF-03 | SSH con comandos predefinidos, contraseña cifrada con el Keystore y huella del servidor verificada | Emulador → servidor SSH de laboratorio, incluido el cambio de huella | Un equipo real (Linux/OpenWrt, Cisco o MikroTik) |
+| RF-02 | GetRequest SNMPv2c propio: sysName, sysUpTime, ifInOctets e ifOutOctets | Códec con pruebas de bytes; emulador → agente simulado y → net-snmp real (Linux en Docker) por UDP | Un equipo de red físico |
+| RF-03 | SSH con comandos predefinidos, contraseña cifrada con el Keystore y huella del servidor verificada | Emulador → servidor simulado (incluido el cambio de huella) y → OpenSSH real (Linux en Docker) | Un equipo de red físico (Linux/OpenWrt, Cisco o MikroTik) |
 | RF-04 | Lee QR/barras y muestra la ficha técnica del backend, con copia local para usarla sin red | QR leído con cámara real (webcam de la PC en el emulador); backend, código desconocido y modo avión | — |
 | RF-05 | Instalación con fotos, GPS y notas, guardada en el teléfono | Emulador con GPS simulado | — |
 | RF-06 | PDF de la instalación con notas, coordenadas y fotos, generado en el teléfono | Emulador: PDF de 2 páginas abierto con el visor del sistema | — |
@@ -157,6 +157,13 @@ técnico decide si repetir.
   cancelación en el emulador.
 - Emulador → PC (`10.0.2.2:1161`): sysName `TP6-LAB-PC`, uptime y contadores;
   community incorrecta → plazo vencido; cancelación.
+- Emulador → **net-snmp real** (`snmpd` de Debian en Docker,
+  `npm.cmd run lab:linux`, comunidad `tp6-lab`):
+  - sysName `tp6-linux-lab`;
+  - uptime coincidente con el arranque del contenedor;
+  - contadores reales de `eth0` (interfaz 2).
+
+  El códec interoperó con una implementación de terceros sin cambios.
 
 ## 4. Manejo de credenciales SSH
 
@@ -210,6 +217,14 @@ devuelve salidas simuladas):
 - Contraseña incorrecta → "Usuario o contraseña incorrectos".
 - Clave del servidor cambiada → conexión rechazada sin enviar la contraseña.
 - Servidor detenido → "puerto cerrado o equipo inaccesible".
+
+Contra **OpenSSH real** (Debian en Docker, `npm.cmd run lab:linux`):
+
+- La huella mostrada coincidió con la clave ECDSA del servidor.
+- Contraseña incorrecta: rechazada.
+- `uptime` e `ip -brief address` devolvieron la salida real del sistema.
+- Ni la contraseña ni la comunidad SNMP quedaron en la base ni en las
+  preferencias.
 
 ## 5. Diseño de la cola offline (outbox)
 
@@ -368,7 +383,7 @@ anuncios de la LAN).
 
 ## 7. Verificación
 
-- `npm.cmd run verify` (TypeScript, ESLint, Jest y bundle Android): 186 pruebas
+- `npm.cmd run verify` (TypeScript, ESLint, Jest y bundle Android): 187 pruebas
   en 16 suites al 02/11/2026. Más `test:backend`, `test:snmp-lab` y
   `test:ssh-lab` con Node.
 - Las pruebas en el emulador Android 16 (API 36) están descritas paso a paso en
@@ -379,7 +394,8 @@ anuncios de la LAN).
 ## 8. Limitaciones y trabajo pendiente
 
 - Pruebas con equipos reales de la LAN: descubrimiento de un equipo real (con
-  un teléfono Android), SNMP a un equipo de red y SSH a un equipo real.
+  un teléfono Android), y SNMP y SSH contra un equipo de red físico. Ya se
+  probaron contra net-snmp y OpenSSH reales, pero en un contenedor de la PC.
 - SNMP sin v3: sin autenticación ni cifrado. Para producción correspondería
   SNMPv3 (USM).
 - El backend es un stub de laboratorio: sin autenticación de usuarios ni HTTPS.

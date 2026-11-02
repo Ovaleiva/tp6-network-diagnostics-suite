@@ -39,12 +39,18 @@ export function parseLinuxUptime(output: string): number | undefined {
 }
 
 // Salida de "ip -brief address": nombre, estado y direcciones por renglón.
+// En interfaces virtuales o VLAN el nombre trae el enlace padre ("eth0@if22",
+// "eth0.10@eth0"); se muestra solo el nombre.
 export function parseIpBrief(output: string): SshInterface[] {
   return output
     .split(/\r?\n/u)
     .map(line => line.trim().split(/\s+/u))
     .filter(parts => parts.length >= 2 && parts[0])
-    .map(([name, state, ...addresses]) => ({ name, state, addresses }));
+    .map(([name, state, ...addresses]) => ({
+      name: name.split('@')[0] || name,
+      state,
+      addresses,
+    }));
 }
 
 export function formatDuration(seconds: number): string {

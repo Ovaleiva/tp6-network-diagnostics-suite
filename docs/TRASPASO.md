@@ -520,6 +520,57 @@ webcam apuntando a la pantalla:
 Es la lectura real con ML Kit sobre una cámara física. Lo único que no se
 probó es el hardware de cámara de un teléfono.
 
+## Paso 9 — SNMP y SSH contra agentes reales en Docker (02/11, HECHO)
+
+En la LAN no hay equipos para RF02/RF03: desde la PC, ni el router
+(`192.168.1.1`, de proveedor) ni los otros 5 equipos visibles respondieron
+SNMP v2c con `public` (161/UDP) ni SSH (22/TCP). Como paso intermedio se
+armó un equipo Linux con agentes **reales** de terceros, en lugar de los
+laboratorios simulados (`lab:snmp` y `lab:ssh` devuelven valores fijos):
+
+- `scripts/linux-lab/Dockerfile`: Debian 12 con `snmpd` (net-snmp) y
+  OpenSSH.
+  - Comunidad de solo lectura `tp6-lab` (no `public`).
+  - Usuario `tecnico` / `laboratorio`, sin root.
+- Se levanta con `npm.cmd run lab:linux`, con Docker Desktop abierto.
+  - Publica SNMP en `127.0.0.1:1162/udp` y SSH en `127.0.0.1:2223`, solo en
+    la PC; desde el emulador, `10.0.2.2`.
+  - Las claves del servidor se generan al construir la imagen, así que la
+    huella no cambia entre arranques. Se ve con
+    `docker exec tp6-linux-lab sh -c 'for f in /etc/ssh/ssh_host_*_key.pub; do ssh-keygen -lf $f; done'`.
+
+Prueba desde la app (emulador, debug):
+
+- **SNMP:**
+  - Configuración: `10.0.2.2:1162`, comunidad `tp6-lab`, interfaz `2`
+    (`eth0`; `cat /sys/class/net/eth0/ifindex`).
+  - Resultado: sysName `tp6-linux-lab`, uptime de 106 s (coincide con el
+    arranque del contenedor), entrada 1554 y salida 400 octetos reales de
+    `eth0` (`docs/evidencia/snmp-netsnmp-android.png`).
+  - El códec propio interoperó con net-snmp sin cambios.
+- **SSH (`10.0.2.2:2223`, perfil Linux):**
+  - La app mostró `SHA256:7t8RZX/MXeF6+0GxzpGcPJVVfGbgVIOBHn/9wq2OXec`,
+    igual a la clave ECDSA del contenedor (JSch negoció ECDSA).
+  - Contraseña incorrecta: "Usuario o contraseña incorrectos."
+  - Con la correcta, `uptime` devolvió la salida real ("up 5 min…",
+    interpretada como 300 s) e `ip -brief address` devolvió `lo` y
+    `eth0 · UP · 172.17.0.2/16` (`docs/evidencia/ssh-openssh-android.png`).
+- Los tres diagnósticos quedaron en la base con su acción en la cola. Ni las
+  contraseñas SSH ni la comunidad aparecen en la base ni en las preferencias.
+
+Cambios que salieron de la prueba:
+
+- `parseIpBrief`: en interfaces virtuales o VLAN, `ip` muestra el enlace
+  padre (`eth0@if22`, `eth0.10@eth0`). Ahora se muestra solo el nombre; la
+  salida cruda se conserva. Prueba agregada.
+- Diagnóstico decía "El laboratorio de PC devuelve contadores controlados…"
+  aunque el destino no fuera el laboratorio. Ahora ese texto aparece solo con
+  `10.0.2.2:1161`.
+
+Sigue pendiente un equipo de red físico (router o switch con SNMP, equipo con
+SSH). Si el router de la casa permite activar SNMP en su administración web
+(`http://192.168.1.1`), alcanza para RF02.
+
 ## Plan restante
 
 5. RF07 — HECHO (incluye HTTP en release).

@@ -57,6 +57,12 @@ describe('interpretación de salidas Linux', () => {
     ]);
   });
 
+  it('quita el enlace padre de interfaces virtuales y VLAN', () => {
+    // Salida real de un contenedor Debian y de un router con VLAN.
+    const output = 'eth0@if22        UP             172.17.0.2/16 \neth0.10@eth0     UP             10.10.0.1/24\n';
+    expect(parseIpBrief(output).map(item => item.name)).toEqual(['eth0', 'eth0.10']);
+  });
+
   it('formatea duraciones', () => {
     expect(formatDuration(3 * 86400 + 4 * 3600 + 5 * 60)).toBe('3 d 4 h 5 min');
     expect(formatDuration(59)).toBe('0 min');

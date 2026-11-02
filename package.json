@@ -18,6 +18,7 @@
     "test:snmp-lab": "node --test scripts/snmp-lab.test.cjs",
     "lab:ssh": "node scripts/ssh-lab.cjs",
     "test:ssh-lab": "node --test scripts/ssh-lab.test.cjs",
+    "lab:linux": "docker build -t tp6-linux-lab scripts/linux-lab && docker run --rm --name tp6-linux-lab --hostname tp6-linux-lab -p 127.0.0.1:2223:22 -p 127.0.0.1:1162:161/udp tp6-linux-lab",
     "backend": "node backend/server.cjs",
     "test:backend": "node --test backend/server.test.cjs",
     "docs:pdf": "node scripts/informe-pdf.cjs"

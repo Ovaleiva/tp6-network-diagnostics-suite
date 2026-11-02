@@ -32,6 +32,8 @@ export function DiagnosticsScreen({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<SnmpDiagnostic['snmp']>();
+  // El agente simulado de lab:snmp; cualquier otro destino es un equipo real.
+  const isLab = ip.trim() === '10.0.2.2' && port === '1161';
   const running = useRef(false);
   const mounted = useRef(true);
   useEffect(() => {
@@ -129,13 +131,12 @@ export function DiagnosticsScreen({
       )}
       <View style={styles.card}>
         <Text style={styles.subtitle}>
-          {ip.trim() === '10.0.2.2' && port === '1161'
-            ? 'Laboratorio local'
-            : 'Equipo objetivo'}
+          {isLab ? 'Laboratorio local' : 'Equipo objetivo'}
         </Text>
         <Text style={styles.body}>
-          SNMPv2c · Solo lectura. El laboratorio de PC devuelve contadores
-          controlados de su interfaz virtual 1, no tráfico de la placa de red.
+          {isLab
+            ? 'SNMPv2c · Solo lectura. El laboratorio de PC devuelve contadores controlados de su interfaz virtual 1, no tráfico de la placa de red.'
+            : 'SNMPv2c · Solo lectura. Consulta nombre, uptime y los contadores acumulados de la interfaz indicada.'}
         </Text>
       </View>
       {fields.map(field => (

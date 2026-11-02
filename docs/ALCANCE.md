@@ -33,7 +33,9 @@ laboratorio; falta un equipo real. RF08 (historial por sitio y equipo) se consul
 en modo avión con el APK release abierto sin red. RF07 (cola, reintentos,
 conflictos y envío al backend de laboratorio) se probó en el emulador, también
 con el APK release. RF04 leyó el QR con la cámara (webcam de la PC en el
-emulador) y trajo la ficha técnica, con copia local para usarla sin red.
+emulador) y trajo la ficha técnica, con copia local para usarla sin red. RF02 y
+RF03 también se probaron contra net-snmp y OpenSSH reales en un contenedor
+Linux (`npm.cmd run lab:linux`); falta un equipo de red físico.
 Disponer de un tipo o una pantalla no demuestra que un requisito funciona.
 El descubrimiento también conserva el hostname resuelto que NSD devuelve en
 Android API 36+; en versiones anteriores o sin respuesta se muestra no disponible.
