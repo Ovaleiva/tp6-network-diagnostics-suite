@@ -32,7 +32,7 @@ const modules: ReadonlyArray<{
     title: 'Identificar equipo',
     description: 'Lectura QR o barras y ficha técnica.',
     requirement: 'RF-04',
-    status: 'PENDIENTE DE IMPLEMENTACIÓN',
+    status: 'QR Y BARRAS CON FICHA OFFLINE',
   },
   {
     route: 'Installation',
@@ -78,15 +78,14 @@ export function HomeScreen({
       </Text>
       <View style={styles.notice}>
         <Text style={styles.noticeTitle}>
-          En desarrollo · mDNS, SNMP, SSH, instalaciones, PDF, historial y
-          sincronización
+          Validación en laboratorio · RF01 a RF08
         </Text>
         <Text style={styles.description}>
           Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP y
-          SSH, Instalación registra fotos, GPS y notas sin conexión, Reportes
-          genera su PDF, Historial los consulta sin red y Sincronización los
-          envía al backend cuando responde. Identificación todavía está
-          pendiente.
+          SSH, Identificar lee el QR o las barras y trae la ficha técnica,
+          Instalación registra fotos, GPS y notas sin conexión, Reportes genera
+          su PDF, Historial los consulta sin red y Sincronización los envía al
+          backend cuando responde. Falta probar con equipos reales de la LAN.
         </Text>
       </View>
       {modules.map(module => (

@@ -29,6 +29,11 @@ const MIGRATIONS: string[][] = [
     `CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
   ],
+  // 3: copia local de las fichas técnicas descargadas, para consultarlas sin red.
+  [
+    `CREATE TABLE IF NOT EXISTS technical_sheets (
+      code TEXT PRIMARY KEY, fetched_at TEXT NOT NULL, payload TEXT NOT NULL)`,
+  ],
 ];
 
 export async function migrate(db: SqlDatabase): Promise<number> {

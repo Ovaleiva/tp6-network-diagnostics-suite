@@ -5,6 +5,7 @@ import type {
   Installation,
   InstallationReport,
   OutboxAction,
+  TechnicalSheet,
 } from '../../core/domain/models';
 
 export interface LocalRepository {
@@ -38,6 +39,9 @@ export interface LocalRepository {
   listPendingActions(): Promise<OutboxAction[]>;
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
+  // Copia local de la última ficha descargada para cada código.
+  findTechnicalSheet(code: string): Promise<TechnicalSheet | null>;
+  saveTechnicalSheet(sheet: TechnicalSheet): Promise<void>;
 }
 
 // Operaciones de la cola que usa solo la capa de sincronización.

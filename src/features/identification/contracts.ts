@@ -1,7 +1,11 @@
-import type { TechnicalSheet } from '../../core/domain/models';
+import type { LocalRepository } from '../local-store/contracts';
+import type { FetchSheet } from './technicalSheet';
 
-export interface IdentificationService {
-  scanCode(): Promise<string>;
-  // null: la ficha no está disponible ni en caché local ni desde el backend.
-  findTechnicalSheet(code: string): Promise<TechnicalSheet | null>;
+export interface IdentificationServices {
+  repository: Pick<
+    LocalRepository,
+    'findTechnicalSheet' | 'saveTechnicalSheet' | 'getSetting'
+  >;
+  // Recibe la URL del backend guardada en Sincronización.
+  fetcherFor: (baseUrl: string) => FetchSheet;
 }

@@ -429,12 +429,85 @@ compilar) y C: quedó con 22 GB libres. Antes de otra compilación release,
 revisar el espacio libre o compilar solo la ABI necesaria con
 `-PreactNativeArchitectures=x86_64` (emulador) o `arm64-v8a` (teléfono).
 
+## Paso 8 — QR/barras y ficha técnica, RF04 (HECHO; lectura con cámara pendiente en teléfono)
+
+Decisiones (justificar en el informe):
+
+- **`react-native-vision-camera-barcode-scanner` 5.2.3**, plugin oficial de
+  VisionCamera v5 y de la misma versión que la cámara instalada. En v5,
+  `useObjectOutput` de VisionCamera es solo para iOS. El plugin usa ML Kit
+  con el modelo **incluido en el APK** (`com.google.mlkit:barcode-scanning`,
+  no la variante de Play Services), así que lee códigos sin conexión. Se
+  descartó 5.2.4 por ser del 29/10 y no coincidir con la cámara (5.2.3).
+- Formatos: QR, Code 128, Code 39 y Data Matrix. Los de barras de 1D que
+  admiten letras son los necesarios para códigos como `TP6-ONT-001`; EAN/UPC
+  son solo numéricos.
+- **Código de equipo:** 3 a 64 letras, números, `-`, `.` o `_`, normalizado a
+  mayúsculas (`parseEquipmentCode`). Un QR con otra cosa (por ejemplo, una
+  URL) se informa y la lectura sigue. Se usa el primer código válido: el
+  lector lo informa en muchos cuadros seguidos.
+- **Ficha:** primero se muestra la copia local (si existe) y después se
+  consulta `GET /technical-sheets/:code` en la URL guardada en
+  Sincronización. Resultados:
+  - 200: se guarda (o se reemplaza) la copia.
+  - 404: "No hay ficha técnica" (con copia: se muestra la copia y se avisa que
+    el backend ya no la tiene).
+  - Sin red, 5xx o respuesta inválida: la copia con su fecha, o "nunca se
+    descargó en este teléfono".
+- La ficha no pasa por la cola de sincronización: el teléfono no la modifica,
+  solo la descarga.
+
+Archivos:
+
+- `src/features/identification/technicalSheet.ts` (lógica pura):
+  `parseEquipmentCode`, `createSheetFetcher` (fetch con plazo de 8 s, valida
+  los campos), `lookupSheet` (copia local + backend) y `describeLookup`
+  (textos).
+- `CodeScannerView.tsx`: cámara trasera con `useBarcodeScannerOutput`.
+- `IdentificationScreen.tsx`: "Escanear código" (la cámara se abre dentro de
+  la pantalla), código manual con "Buscar ficha" (etiqueta dañada o pruebas) y
+  la ficha con su origen. El lector se inyecta en pruebas.
+- Migración 3 (`technical_sheets`), `findTechnicalSheet` y
+  `saveTechnicalSheet`.
+- Se borró `ModuleScreen` (era la pantalla de módulo pendiente; ya no queda
+  ninguno).
+- `jest.setup.js`: mock del plugin. Pruebas: `identification.test.tsx` (23:
+  validación, backend real, copia local con SQLite y pantalla con lector
+  simulado). Jest: 186/186.
+- `docs/etiquetas/`: QR de `TP6-ONT-001` y `TP6-RTR-002` para imprimir.
+
+### Prueba en emulador (02/11, HECHA salvo la lectura con cámara)
+
+Compilación debug solo para x86_64 en 3 min 8 s:
+`.\gradlew.bat app:assembleDebug -PreactNativeArchitectures=x86_64` e
+`adb install -r`.
+
+- "Escanear código" abrió la cámara trasera dentro de la pantalla (el permiso
+  ya estaba concedido) y "Cancelar lectura" la cerró.
+- Con el backend: `TP6-RTR-002` y `tp6-ont-001` (normalizado a
+  `TP6-ONT-001`) mostraron su ficha, "actualizada desde el backend";
+  `TP6-XYZ-999`: "No hay ficha técnica para el código TP6-XYZ-999." La base
+  quedó con migración 3 y las 2 fichas.
+- En modo avión: `TP6-RTR-002` mostró la copia "guardada el 02/11/2026 01:26"
+  (`docs/evidencia/identificacion-ficha-sin-red-android.png`), y
+  `TP6-NUEVO-01`: "No se pudo contactar al backend. La ficha de TP6-NUEVO-01
+  nunca se descargó en este teléfono".
+- **Lectura con la cámara, sin probar:** la cámara trasera del AVD es la
+  escena virtual (`hw.camera.back=virtualscene`). Con
+  `-virtualscene-poster wall=<qr.png>` y con `adb emu virtualscene-image` el
+  QR no quedó a la vista: la escena de esta versión del emulador (una sala con
+  TV) arranca mirando a otro lado, y la cámara virtual se mueve con teclado y
+  mouse en la ventana del emulador (Alt + WASD), no por consola
+  (`sensor set orientation` no la mueve). Queda para el teléfono físico con
+  las etiquetas de `docs/etiquetas/`.
+
 ## Plan restante
 
 5. RF07 — HECHO (incluye HTTP en release).
-6. RF04 — QR/barras con el code scanner de vision-camera; asociar a ficha técnica.
-7. Pruebas con teléfono físico en la LAN: RF01 (equipo real y MAC), RF02 (SNMP
-   a un equipo de red), RF03 (SSH a un equipo real).
+6. RF04 — HECHO; falta leer el QR con la cámara de un teléfono físico.
+7. Pruebas con teléfono físico en la LAN: RF04 (leer `docs/etiquetas/` con la
+   cámara), RF01 (equipo real y MAC), RF02 (SNMP a un equipo de red), RF03
+   (SSH a un equipo real).
 8. Entregables: APK release final (la prueba de Historial en modo avión ya se
    hizo el 02/11), informe técnico (SNMP, credenciales SSH, outbox, HTTP en
    release), video demo.

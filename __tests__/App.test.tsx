@@ -2,7 +2,6 @@ import React from 'react';
 import ReactTestRenderer, { act } from 'react-test-renderer';
 import App from '../App';
 import { HomeScreen } from '../src/features/home/HomeScreen';
-import { ModuleScreen } from '../src/shared/components/ModuleScreen';
 import { DevicesScreen } from '../src/features/discovery/DevicesScreen';
 import { DiagnosticsScreen } from '../src/features/protocols/DiagnosticsScreen';
 import { InstallationScreen } from '../src/features/evidence/InstallationScreen';
@@ -10,6 +9,7 @@ import { ReportsScreen } from '../src/features/reporting/ReportsScreen';
 import { SshScreen } from '../src/features/protocols/SshScreen';
 import { HistoryScreen } from '../src/features/history/HistoryScreen';
 import { SyncScreen } from '../src/features/sync/SyncScreen';
+import { IdentificationScreen } from '../src/features/identification/IdentificationScreen';
 
 jest.mock('../src/specs/NativeNetworkDiscovery', () => ({
   __esModule: true,
@@ -66,16 +66,13 @@ afterEach(async () => {
 
 test('inicia en Inicio sin montar servicios ni pantallas de diagnóstico', () => {
   expect(app.root.findAllByType(HomeScreen)).toHaveLength(1);
-  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
 });
 
-test.each([
-  ['Identificar equipo', 'Identificar equipo', 'RF-04'],
-])('abre %s y permite volver a Inicio', async (label, title, requirement) => {
+test('Identificar equipo abre el lector y permite volver a Inicio', async () => {
   const button = app.root.findAll(
     node =>
       node.props.accessibilityRole === 'button' &&
-      node.props.accessibilityLabel === label &&
+      node.props.accessibilityLabel === 'Identificar equipo' &&
       typeof node.props.onPress === 'function',
   )[0];
   expect(button).toBeDefined();
@@ -83,14 +80,13 @@ test.each([
     button!.props.onPress();
     jest.runAllTimers();
   });
-  const module = app.root.findByType(ModuleScreen);
-  expect(module.props.title).toBe(title);
-  expect(module.props.requirement).toBe(requirement);
+  expect(app.root.findAllByType(IdentificationScreen)).toHaveLength(1);
+  expect(JSON.stringify(app.toJSON())).toContain('RF-04 · QR, BARRAS Y FICHA TÉCNICA');
   await act(async () => {
     app.root.findByType(HomeScreen).props.navigation.goBack();
     jest.runAllTimers();
   });
-  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
+  expect(app.root.findAllByType(IdentificationScreen)).toHaveLength(0);
 });
 
 test('Equipos abre la búsqueda funcional y permite volver a Inicio', async () => {
@@ -99,7 +95,6 @@ test('Equipos abre la búsqueda funcional y permite volver a Inicio', async () =
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(DevicesScreen)).toHaveLength(1);
-  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
   await act(async () => {
     app.root.findByType(HomeScreen).props.navigation.goBack();
     jest.runAllTimers();
@@ -113,7 +108,6 @@ test('Instalación abre el formulario de evidencia y permite volver a Inicio', a
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(InstallationScreen)).toHaveLength(1);
-  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
   await act(async () => {
     app.root.findByType(HomeScreen).props.navigation.goBack();
     jest.runAllTimers();
@@ -127,7 +121,6 @@ test('Reportes abre la lista de instalaciones y permite volver a Inicio', async 
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(ReportsScreen)).toHaveLength(1);
-  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
   expect(JSON.stringify(app.toJSON())).toContain('RF-06 · PDF DE INSTALACIÓN');
   await act(async () => {
     app.root.findByType(HomeScreen).props.navigation.goBack();
@@ -142,7 +135,6 @@ test('Historial abre la consulta local y permite volver a Inicio', async () => {
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(HistoryScreen)).toHaveLength(1);
-  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
   expect(JSON.stringify(app.toJSON())).toContain('RF-08 · HISTORIAL SIN CONEXIÓN');
   await act(async () => {
     app.root.findByType(HomeScreen).props.navigation.goBack();
@@ -157,7 +149,6 @@ test('Sincronización abre la cola y permite volver a Inicio', async () => {
     jest.runAllTimers();
   });
   expect(app.root.findAllByType(SyncScreen)).toHaveLength(1);
-  expect(app.root.findAllByType(ModuleScreen)).toHaveLength(0);
   expect(JSON.stringify(app.toJSON())).toContain('RF-07 · SINCRONIZACIÓN');
   await act(async () => {
     app.root.findByType(HomeScreen).props.navigation.goBack();

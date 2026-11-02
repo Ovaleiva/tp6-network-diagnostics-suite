@@ -30,8 +30,11 @@ y RF06 (PDF local con notas, fotos y coordenadas, abierto con el visor del siste
 se probaron en el emulador; ver docs/TRASPASO.md. RF03 (SSH con credencial en el
 Keystore y huella del servidor verificada) se validó contra un servidor de
 laboratorio; falta un equipo real. RF08 (historial por sitio y equipo) se consultó
-en modo avión en el emulador; falta repetirlo abriendo el APK release sin red.
-RF04 y RF07 siguen pendientes.
+en modo avión con el APK release abierto sin red. RF07 (cola, reintentos,
+conflictos y envío al backend de laboratorio) se probó en el emulador, también
+con el APK release. RF04 busca la ficha técnica (con copia local para usarla sin
+red) a partir del código escrito a mano; falta leer el QR con la cámara de un
+teléfono físico.
 Disponer de un tipo o una pantalla no demuestra que un requisito funciona.
 El descubrimiento también conserva el hostname resuelto que NSD devuelve en
 Android API 36+; en versiones anteriores o sin respuesta se muestra no disponible.

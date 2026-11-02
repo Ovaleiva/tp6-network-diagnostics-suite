@@ -5,6 +5,7 @@ import type {
   Installation,
   InstallationReport,
   OutboxAction,
+  TechnicalSheet,
 } from '../../core/domain/models';
 import {
   nextAttemptAt,
@@ -210,6 +211,14 @@ export function createSqliteRepository(
       await db.execute(
         'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
         [key, value],
+      );
+    },
+    findTechnicalSheet: code =>
+      one<TechnicalSheet>('SELECT payload FROM technical_sheets WHERE code = ?', [code]),
+    async saveTechnicalSheet(sheet) {
+      await db.execute(
+        'INSERT OR REPLACE INTO technical_sheets (code, fetched_at, payload) VALUES (?, ?, ?)',
+        [sheet.code, sheet.fetchedAt, JSON.stringify(sheet)],
       );
     },
     async listReadyActions(now, limit = 20) {

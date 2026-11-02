@@ -14,3 +14,8 @@ jest.mock('react-native-vision-camera', () => ({
     requestPermission: jest.fn(),
   })),
 }));
+
+// Lector de códigos (ML Kit): en Jest no hay cámara.
+jest.mock('react-native-vision-camera-barcode-scanner', () => ({
+  useBarcodeScannerOutput: jest.fn(() => ({})),
+}));

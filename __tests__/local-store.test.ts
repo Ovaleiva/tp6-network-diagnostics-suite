@@ -37,8 +37,8 @@ maybe('repositorio SQLite', () => {
 
   it('migra una sola vez', async () => {
     const db = memoryDb();
-    expect(await migrate(db)).toBe(2);
-    expect(await migrate(db)).toBe(2);
+    expect(await migrate(db)).toBe(3);
+    expect(await migrate(db)).toBe(3);
   });
 
   it('guarda configuración local', async () => {
