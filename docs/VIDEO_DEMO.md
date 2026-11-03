@@ -33,13 +33,18 @@ sección 1).
 
 ## Tramos
 
-`adb shell screenrecord` corta a los 3 minutos, así que cada tramo es un
-archivo:
+Cada tramo es un archivo. `adb shell screenrecord` graba en negro en el
+emulador con la GPU de la PC, así que se usa el grabador del emulador, que
+escribe un `.webm` directo en la PC (máximo 3 minutos):
 
 ```powershell
-adb shell screenrecord /sdcard/tramo1.mp4   # Ctrl+C al terminar
-adb pull /sdcard/tramo1.mp4 tmp/video/
+adb emu screenrecord start --time-limit 180 C:\dev\tp6\tmp\video\tramo1.webm
+adb emu screenrecord stop
 ```
+
+Los diagnósticos manuales quedan en `sitio-local`, así que en el tramo 8 el
+filtro por sitio no cambia la lista: lo que se muestra es que el historial
+abre sin red.
 
 | # | Pantalla | Qué hacer | Texto sugerido para la narración o un cartel | Duración |
 | --- | --- | --- | --- | --- |
@@ -50,7 +55,7 @@ adb pull /sdcard/tramo1.mp4 tmp/video/
 | 5 | Identificar equipo | "Escanear código" → QR del monitor frente a la webcam | "El QR se lee con ML Kit sin conexión y la ficha técnica se descarga del backend y queda guardada." | 30 s |
 | 6 | Instalación → Reportes | Sitio, notas, dos fotos con GPS → Guardar → "Generar PDF" → "Abrir PDF" | "La instalación se guarda en el teléfono con fotos georreferenciadas; el PDF se genera localmente." | 60 s |
 | 7 | Sincronización | Activar el modo avión (`adb shell cmd connectivity airplane-mode enable`) → regenerar el PDF o guardar otra instalación → Sincronización muestra el pendiente y "Backend no disponible" → desactivar el modo avión → "Última ronda (al volver la red)… enviada(s)" | "Sin red todo queda en una cola persistente. Al volver la conexión, la app sincroniza sola, sin duplicados." | 60 s |
-| 8 | Historial | Filtrar por sitio | "Historial por sitio y equipo, consultable sin conexión." | 15 s |
+| 8 | Historial | Con el modo avión activado: abrir Historial, filtrar `sitio-local` y abrir "Ver detalle" de un diagnóstico SSH | "Historial por sitio y equipo, consultable sin conexión." | 25 s |
 
 Total: unos 4 a 5 minutos.
 

@@ -291,6 +291,14 @@ Los archivos se suben antes que la acción que los referencia, en base64 con su
 SHA-256. La entidad enviada no contiene rutas locales del teléfono: referencia
 los archivos por `fileId`.
 
+Regenerar el PDF de una revisión ya enviada produce otro archivo (cambia la
+fecha de generación). Por eso el reporte lleva una **generación**: es la
+revisión con la que se sincroniza y forma parte del `fileId`
+(`rep-<instalación>-r<revisión>-g<generación>`). El backend la recibe como una
+revisión mayor con un archivo nuevo, en vez de rechazarla por repetir el
+`fileId`. Este caso apareció al grabar el video: el PDF regenerado quedaba en
+"Fallidas" sin poder enviarse.
+
 Clasificación en la app (`httpTransport.ts`): 2xx éxito; 409 conflicto; 408,
 429, 5xx y errores de red, temporales; otros 4xx, permanentes.
 

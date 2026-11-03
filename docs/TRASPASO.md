@@ -1,4 +1,30 @@
-# Traspaso de trabajo (02/11/2026)
+# Traspaso de trabajo (03/11/2026)
+
+## Dónde quedamos (03/11)
+
+Video grabado en el emulador: los 8 tramos están en `tmp/video/tramo1.webm` a
+`tramo8.webm` (unos 6 min en total; no se versionan). Se grabaron con el
+grabador del emulador (`adb emu screenrecord start|stop`), porque
+`adb shell screenrecord` daba video negro con la GPU de la PC. El tramo 4 tiene
+una pausa que hay que recortar al editar.
+
+Bug encontrado al grabar y corregido: regenerar el PDF de una revisión ya
+sincronizada quedaba en "Fallidas" para siempre ("El fileId ya se usó con otro
+contenido"), porque el `fileId` y la revisión enviada eran los mismos con otro
+contenido. Ahora el reporte lleva `generation` (`src/core/sync/reportUpload.ts`):
+se envía como revisión y forma parte del `fileId` (`…-g2`). Los reportes
+guardados antes conservan su `fileId` y siguen desde la revisión con que se
+enviaron. Probado en el emulador: la falla de rev. 1 se envió al regenerar, y
+el tramo 7 lo muestra con rev. 2.
+
+- **APK final** (4 ABI) con el arreglo:
+  `D:/Android/apk/tp6-release-final-2026-11-03.apk`. Reemplaza al del 02/11.
+
+Siguiente sesión:
+
+1. Unir los tramos en Clipchamp con los textos de `docs/VIDEO_DEMO.md` y
+   recortar el tramo 4.
+2. Repasar el README (cómo correr labs, backend y app) y entregar.
 
 ## Dónde quedamos (02/11, noche)
 
@@ -318,7 +344,8 @@ Hecho el 29/10 y probado en Node/Jest:
   `lastError` en `OutboxAction`.
 - `src/features/sync/syncEngine.ts` (lógica pura): health primero (sin backend
   no toca la cola); por acción `markSending` → sube archivos (fotos con
-  `fileId` = id de la foto, PDF con `fileId` = id del reporte, sin rutas locales)
+  `fileId` = id de la foto, PDF con `fileId` = id del reporte más la generación
+  desde el 03/11, sin rutas locales)
   → acción. ok → `markSent`; 409 → `markConflict`; rechazo → `markRejected`;
   temporal → `markFailed` (espera creciente) y **corta la ronda**.
 - `src/features/sync/httpTransport.ts`: `fetch` con timeout; 2xx ok, 409
