@@ -75,3 +75,9 @@ validar el fundamento nativo y explicar el flujo al alumno.
 Los casos de uso del PDF también enlazan descubrimiento con consulta SNMP inicial,
 y registro de instalación con generación de PDF y encolado. Esas conexiones se
 implementarán después de validar sus servicios; no están activas en esta etapa.
+
+Actualización 03/11/2026: RF01 agrega un barrido TCP de rango (sección 6.1 del
+informe técnico). Desde el emulador encontró el router y otros equipos reales de
+la LAN `192.168.1.0/24`, con IP y puertos abiertos. La MAC sigue sin poder
+obtenerse en Android 10+; la limitación está documentada y conviene confirmarla
+con la cátedra.

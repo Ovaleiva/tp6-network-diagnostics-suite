@@ -249,3 +249,19 @@ El registro de la copia aislada quedó en
 El implementador repitió como comprobación puntual el comando de instrumentación
 instalado: volvió a obtener `stream=PASS:` y `INSTRUMENTATION_CODE: -1`
 (`tmp/android-run/native-udp-parent-check.txt`). `git diff --check` también aprobó.
+
+## Barrido de rango TCP (RF01, 03/11/2026)
+
+- `npm.cmd run verify`: 203 pruebas en 17 suites. `range-scan.test.ts` cubre el
+  análisis del rango (último octeto, CIDR /24–/30, una IP, rechazo de redes
+  públicas y de más de 256 direcciones), la concurrencia, el progreso, la
+  cancelación y la conversión a equipos sin MAC ni hostname inventados.
+  `discovery.test.tsx` cubre la pantalla: barrido con resultado, rango público
+  rechazado sin sondear, cancelación y cancelación al salir.
+- Emulador, APK release: barrido de `192.168.1.1-254` en unos 11 s. Encontró
+  `192.168.1.1` (23, 80, 443) y `192.168.1.93` (80); en la grabación del video,
+  también `192.168.1.10` y `192.168.1.79` (80). Una sonda desde la PC a los
+  mismos puertos dio los mismos resultados. `192.168.1.2` y `192.168.1.86`
+  (presentes en la tabla ARP de la PC, sin esos puertos abiertos) y
+  `192.168.1.50` (inexistente) no aparecieron: no hay falsos positivos por la
+  red del emulador. Captura: `docs/evidencia/barrido-lan-android.png`.

@@ -12,7 +12,7 @@ comandos, está en [TRASPASO.md](TRASPASO.md) y [VERIFICACION.md](VERIFICACION.m
 
 | ID | Qué hace la app | Verificado | Pendiente |
 | --- | --- | --- | --- |
-| RF-01 | Busca servicios mDNS/DNS-SD en la LAN y lista IP, hostname (si NSD lo entrega) y servicios | Motor nativo con un servicio controlado y recorrido en el emulador | Un equipo físico de la LAN. La MAC no se puede obtener en Android 10+ (ver 6.1) |
+| RF-01 | Busca servicios mDNS/DNS-SD y barre un rango de la LAN con sondas TCP; lista IP, puertos o servicios y hostname (si NSD lo entrega) | mDNS con un servicio controlado. Barrido desde el emulador sobre la LAN real `192.168.1.0/24`: encontró el router y otros equipos, confirmados desde la PC | La MAC no se puede obtener en Android 10+ (ver 6.1). mDNS de un equipo real necesita un teléfono |
 | RF-02 | GetRequest SNMPv2c propio: sysName, sysUpTime, ifInOctets e ifOutOctets | Códec con pruebas de bytes; emulador → agente simulado y → net-snmp real (Linux en Docker) por UDP | Un equipo de red físico |
 | RF-03 | SSH con comandos predefinidos, contraseña cifrada con el Keystore y huella del servidor verificada | Emulador → servidor simulado (incluido el cambio de huella) y → OpenSSH real (Linux en Docker) | Un equipo de red físico (Linux/OpenWrt, Cisco o MikroTik) |
 | RF-04 | Lee QR/barras y muestra la ficha técnica del backend, con copia local para usarla sin red | QR leído con cámara real (webcam de la PC en el emulador); backend, código desconocido y modo avión | — |
@@ -31,7 +31,7 @@ proyecto necesita módulos nativos propios, que Expo Go no puede cargar.
 flowchart TD
   UI["Pantallas (src/features/*)"] --> L["Lógica pura (src/core, *View.ts, motores)"]
   UI --> I["Adaptadores (src/infrastructure)"]
-  I --> N["TurboModules Kotlin propios<br/>UDP · mDNS · SSH · visor PDF"]
+  I --> N["TurboModules Kotlin propios<br/>UDP · TCP · mDNS · SSH · visor PDF"]
   I --> DB[("SQLite local<br/>op-sqlite")]
   I --> FS["Archivos de la app<br/>fotos y PDF"]
   N --> LAN["Equipos de la LAN"]
@@ -43,7 +43,7 @@ Las capas de la consigna se corresponden con carpetas del código:
 
 | Capa | Código |
 | --- | --- |
-| Discovery | `features/discovery`, `MdnsDiscovery.kt` |
+| Discovery | `features/discovery` (`rangeScan.ts`), `MdnsDiscovery.kt`, `TcpProbe.kt` |
 | Protocol | `core/snmp/codec.js`, `UdpExchange.kt`, `SshClientModule.kt`, `SshSecurity.kt` |
 | Evidence | `features/evidence`, `features/identification` |
 | Local Store | `infrastructure/storage` (migraciones, repositorio, outbox) |
@@ -62,7 +62,7 @@ dispositivo.
 | Sugerido | Elegido | Motivo |
 | --- | --- | --- |
 | react-native-zeroconf | `NsdManager` de Android en un TurboModule propio | API del sistema, sin dependencia de terceros; compatible con la Nueva Arquitectura |
-| react-native-udp / tcp-socket | `DatagramSocket` en un TurboModule propio (`NativeUdpTransport`) | Solo hace falta intercambiar un datagrama con plazo y cancelación; el módulo valida destino, tamaño y plazo |
+| react-native-udp / tcp-socket | `DatagramSocket` (`NativeUdpTransport`) y `SocketChannel` sin bloqueo (`NativeTcpProbe`) en TurboModules propios | SNMP solo necesita intercambiar un datagrama con plazo y cancelación; el barrido solo abre y cierra conexiones. Cada módulo valida destino, puertos y plazo, y la sonda TCP solo acepta IPv4 privadas |
 | react-native-ssh-sftp | Módulo Kotlin propio con JSch 0.2.25 (fork mantenido `com.github.mwiede:jsch`) | La biblioteca 1.11.0 fija `StrictHostKeyChecking=no` (acepta cualquier servidor), conecta sin plazo, usa el puente viejo y JSch 0.2.17 |
 | react-native-keychain | Cifrado AES-GCM con una clave del Android Keystore dentro del módulo SSH | La contraseña no vuelve nunca a JavaScript (ver 4) |
 | vision-camera-code-scanner | `react-native-vision-camera-barcode-scanner` 5.2.3 (ML Kit) | Plugin oficial de VisionCamera v5; la salida de objetos de v5 es solo iOS. El modelo va en el APK y lee sin red |
@@ -358,14 +358,36 @@ La app busca servicios DNS-SD/mDNS (`_http`, `_https`, `_ssh`, `_workstation`,
 cancelación. Agrupa por IP y muestra el hostname cuando NSD lo entrega
 (Android 16 / API 36+).
 
+**Barrido de rango.** Un equipo que no anuncia servicios mDNS no aparece en
+esa búsqueda. Por eso la app también barre un rango de la LAN, como el
+"escaneo ARP-like sobre la subred" con sockets TCP que sugiere la consigna:
+
+- Rango: `192.168.1.1-254`, una red de /24 a /30 o una IP, hasta 256
+  direcciones. Sugiere la /24 del teléfono. Solo redes privadas (RFC 1918),
+  validado en JavaScript y otra vez en el módulo nativo.
+- Por cada IP intenta una conexión TCP a 22, 23, 80, 443, 8080 y 8291
+  (SSH, Telnet, web y MikroTik Winbox), con plazo de 700 ms. No envía datos:
+  abre y cierra.
+- `TcpProbe.kt` abre las conexiones de una IP en paralelo con `SocketChannel`
+  sin bloqueo y un `Selector`; JavaScript (`rangeScan.ts`) sondea 32 IP a la
+  vez y muestra el progreso. Se puede cancelar.
+- Un equipo cuenta como activo si **acepta** al menos una conexión. Un rechazo
+  no cuenta: en el emulador las conexiones salen por la PC, y un rechazo no
+  prueba que el equipo exista. Un equipo con todos esos puertos cerrados no
+  aparece.
+- Los equipos encontrados se guardan con `discoveryMethod: 'tcp-probe'` y
+  desde su detalle se abre la consulta SNMP.
+
+En el emulador, mDNS no recibe los anuncios de la LAN, pero el barrido sí
+llega a sus IP a través de la PC. Sobre `192.168.1.1-254` tardó unos 11 s y
+encontró el router (`192.168.1.1`: Telnet, HTTP y HTTPS) y otros equipos con
+HTTP. Cada resultado coincidió con una sonda desde la PC, y los equipos de la
+LAN con esos puertos cerrados no aparecieron.
+
 **MAC:** desde Android 10 las apps no pueden leer la tabla ARP
 (`/proc/net/arp`) ni las MAC de otros equipos. Un escaneo "ARP-like" desde la
-app no es posible sin root. La app muestra "MAC: no disponible por mDNS" en
-lugar de inventarla.
-
-Un equipo que no anuncia servicios mDNS no aparece. Una búsqueda vacía no
-significa una red sin equipos (en el emulador la red virtual no recibe los
-anuncios de la LAN).
+app no es posible sin root: el barrido TCP encuentra equipos, pero no su MAC.
+La app muestra "MAC: no disponible en Android 10+" en lugar de inventarla.
 
 ### 6.2 Evidencia y PDF (RF-05, RF-06)
 
@@ -391,8 +413,8 @@ anuncios de la LAN).
 
 ## 7. Verificación
 
-- `npm.cmd run verify` (TypeScript, ESLint, Jest y bundle Android): 187 pruebas
-  en 16 suites al 02/11/2026. Más `test:backend`, `test:snmp-lab` y
+- `npm.cmd run verify` (TypeScript, ESLint, Jest y bundle Android): 203 pruebas
+  en 17 suites al 03/11/2026. Más `test:backend`, `test:snmp-lab` y
   `test:ssh-lab` con Node.
 - Las pruebas en el emulador Android 16 (API 36) están descritas paso a paso en
   [TRASPASO.md](TRASPASO.md), con capturas en [evidencia/](evidencia/).
@@ -401,9 +423,12 @@ anuncios de la LAN).
 
 ## 8. Limitaciones y trabajo pendiente
 
-- Pruebas con equipos reales de la LAN: descubrimiento de un equipo real (con
-  un teléfono Android), y SNMP y SSH contra un equipo de red físico. Ya se
-  probaron contra net-snmp y OpenSSH reales, pero en un contenedor de la PC.
+- Pruebas con un teléfono Android: mDNS con equipos reales de la LAN (el
+  barrido ya encontró equipos reales desde el emulador).
+- SNMP y SSH contra un equipo de red físico. Ya se probaron contra net-snmp y
+  OpenSSH reales, pero en un contenedor de la PC. El router de la casa no
+  ofrece SNMP en su administración.
+- MAC de los equipos: no se puede obtener desde una app en Android 10+.
 - SNMP sin v3: sin autenticación ni cifrado. Para producción correspondería
   SNMPv3 (USM).
 - El backend es un stub de laboratorio: sin autenticación de usuarios ni HTTPS.

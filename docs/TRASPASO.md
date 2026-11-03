@@ -17,14 +17,28 @@ guardados antes conservan su `fileId` y siguen desde la revisión con que se
 enviaron. Probado en el emulador: la falla de rev. 1 se envió al regenerar, y
 el tramo 7 lo muestra con rev. 2.
 
-- **APK final** (4 ABI) con el arreglo:
-  `D:/Android/apk/tp6-release-final-2026-11-03.apk`. Reemplaza al del 02/11.
+Barrido de rango TCP (RF01), agregado después de comparar con la consigna,
+que pide un dispositivo real de la LAN en el video:
+
+- `src/features/discovery/rangeScan.ts` (rango, concurrencia, equipos) y el
+  TurboModule `NativeTcpProbe` (`TcpProbe.kt`: `SocketChannel` sin bloqueo,
+  solo IPv4 privadas, abre y cierra sin enviar datos). Puertos 22, 23, 80,
+  443, 8080 y 8291; plazo 700 ms; 32 IP a la vez.
+- Probado en el emulador sobre `192.168.1.1-254`: encontró el router y otros
+  equipos, verificados con sondas desde la PC. Detalle en
+  `docs/VERIFICACION.md` y sección 6.1 del informe.
+- El tramo 2 del video se regrabó con el barrido (`tmp/video/tramo2.webm`; el
+  anterior quedó como `tramo2-mdns-viejo.webm`) y `demo-final.mp4` se regeneró
+  con `tmp/video/edicion/render.sh` (ffmpeg instalado con winget).
+
+- **APK final** (4 ABI) con el arreglo del PDF y el barrido: Release
+  [v1.1.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.1.0),
+  copia en `D:/Android/apk/tp6-release-final-2026-11-03-barrido.apk`.
 
 Siguiente sesión:
 
-1. Unir los tramos en Clipchamp con los textos de `docs/VIDEO_DEMO.md` y
-   recortar el tramo 4.
-2. Repasar el README (cómo correr labs, backend y app) y entregar.
+1. Entregar: repositorio público, Release v1.1.0 y `tmp/video/demo-final.mp4`.
+2. Confirmar con la cátedra que la MAC no es exigible en Android 10+.
 
 ## Dónde quedamos (02/11, noche)
 

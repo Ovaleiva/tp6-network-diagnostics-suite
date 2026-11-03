@@ -1,14 +1,15 @@
 # TP6 · Network Diagnostics Suite
 
 Aplicación React Native (Android) para técnicos de campo. Funciona sin conexión:
-descubre equipos por mDNS, consulta SNMPv2c con un códec propio, ejecuta comandos
+descubre equipos por mDNS y barriendo un rango de la LAN, consulta SNMPv2c con un códec propio, ejecuta comandos
 SSH predefinidos, lee QR y barras, registra instalaciones con fotos y GPS, genera
 el PDF en el teléfono y sincroniza todo con un backend cuando vuelve la red.
 
 Los ocho requisitos (RF01–RF08) están implementados y probados en el emulador
 contra laboratorios en la PC, incluidos net-snmp y OpenSSH reales en Docker. No
-hubo un teléfono Android ni un equipo de red físico para probar: RF01 queda
-parcial (el emulador no recibe mDNS de la LAN y Android 10+ no entrega la MAC).
+hubo un teléfono Android ni un equipo de red físico con SNMP. El barrido de
+rango encontró equipos reales de la LAN desde el emulador; la MAC no se informa
+porque Android 10+ no la entrega a las apps.
 El estado por requisito está en la sección 1 del
 [informe técnico](docs/INFORME_TECNICO.md); el detalle del trabajo, en
 [el traspaso](docs/TRASPASO.md).
@@ -16,12 +17,12 @@ El estado por requisito está en la sección 1 del
 ## Instalar el APK
 
 El APK release (4 ABI, unos 125 MB) se descarga de la
-[Release v1.0.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.0.0);
+[Release v1.1.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.1.0);
 no se versiona en el repositorio. Para generarlo, ver [Compilar](#compilar).
 Se instala con:
 
 ```powershell
-adb install -r tp6-network-diagnostics-suite-v1.0.0.apk
+adb install -r tp6-network-diagnostics-suite-v1.1.0.apk
 ```
 
 Está firmado con la clave debug de la plantilla, así que se instala encima de
@@ -110,7 +111,7 @@ src/
   core/                    Lógica sin React Native: modelos, códec SNMP, cola
   features/
     home/                  Inicio
-    discovery/             RF01: descubrimiento mDNS
+    discovery/             RF01: mDNS y barrido TCP de rango
     protocols/             RF02–03: SNMP y SSH
     identification/        RF04: QR, barras y ficha técnica
     evidence/              RF05: instalación con fotos y GPS
@@ -136,11 +137,11 @@ en Git. El keystore de debug de la plantilla es solo para desarrollo.
 
 - [x] Código RF01–RF08 en el repositorio
   ([GitHub](https://github.com/Ovaleiva/tp6-network-diagnostics-suite)).
-  RF01 parcial por falta de un teléfono y de equipos físicos.
+  RF01 sin MAC (Android 10+ no la entrega).
 - [x] APK release con instrucciones de instalación
-  ([Release v1.0.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.0.0)).
+  ([Release v1.1.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.1.0)).
 - [x] Informe técnico de SNMP, credenciales SSH y outbox.
 - [x] Backend ejecutable y sincronización de extremo a extremo.
-- [ ] Video: tramos grabados en el emulador (SNMP, PDF con foto y GPS,
-  reconexión); falta editarlos. El descubrimiento de un equipo real de la LAN
-  no se pudo mostrar.
+- [x] Video demo (`tmp/video/demo-final.mp4`, no se versiona): descubrimiento
+  de equipos reales de la LAN con el barrido, SNMP, PDF con foto y GPS, y
+  sincronización al volver la red.

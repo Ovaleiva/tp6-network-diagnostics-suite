@@ -10,7 +10,7 @@ sección 1).
 
 | Pedido | En el video |
 | --- | --- |
-| Descubrimiento en la LAN | La búsqueda mDNS y su aviso. El emulador no recibe anuncios de la LAN: se dice en pantalla y en el informe |
+| Descubrimiento en la LAN | La búsqueda mDNS (vacía en el emulador) y el barrido de rango, que encuentra el router y otros equipos reales de la LAN |
 | Consulta SNMP exitosa | Contra net-snmp real (Debian en Docker): sysName, uptime y contadores de `eth0` |
 | PDF con foto y GPS | Foto con la webcam de la PC y GPS simulado con `adb emu geo fix` |
 | Sincronización tras recuperar conectividad | Modo avión → cambio en la cola → sin modo avión → envío automático |
@@ -49,7 +49,7 @@ abre sin red.
 | # | Pantalla | Qué hacer | Texto sugerido para la narración o un cartel | Duración |
 | --- | --- | --- | --- | --- |
 | 1 | Inicio | Mostrar los módulos | "Herramienta de campo offline-first: descubrimiento, SNMP, SSH, QR, evidencia, PDF y sincronización." | 10 s |
-| 2 | Equipos en la red | "Buscar equipos" | "Búsqueda mDNS real con NSD de Android. En el emulador la red virtual no recibe los anuncios de la LAN; en un teléfono aparecen los equipos que publican servicios." | 20 s |
+| 2 | Equipos en la red | "Buscar equipos" (mDNS, vacío en el emulador) → rango `192.168.1.1-254` → "Barrer rango" → abrir el router `192.168.1.1` | "mDNS no recibe anuncios en el emulador. El barrido de rango prueba conexiones TCP a puertos de administración de cada IP y encuentra equipos reales de la LAN. La MAC no está disponible en Android 10+." | 35 s |
 | 3 | Diagnóstico | IP `10.0.2.2`, puerto `1162`, comunidad `tp6-lab`, interfaz `2` → "Consultar SNMP" | "GetRequest SNMPv2c armado con un códec BER propio y enviado por UDP. Responde net-snmp real: nombre, uptime y contadores de la interfaz." | 40 s |
 | 4 | Diagnóstico SSH | Puerto `2223` → "Ejecutar uptime" y "Ejecutar interfaces" | "Comandos predefinidos por SSH. La huella del servidor se verificó antes de enviar la contraseña, que está cifrada con el Keystore." | 30 s |
 | 5 | Identificar equipo | "Escanear código" → QR del monitor frente a la webcam | "El QR se lee con ML Kit sin conexión y la ficha técnica se descarga del backend y queda guardada." | 30 s |
