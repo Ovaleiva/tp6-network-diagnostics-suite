@@ -1,12 +1,18 @@
 # Informe técnico · Network Diagnostics Suite (TP6)
 
-Desarrollo de Aplicaciones Móviles 2026 · Fecha: 02/11/2026.
+Desarrollo de Aplicaciones Móviles 2026 · Autor: Osvaldo Leiva · Fecha: 03/11/2026.
 
 Este documento cubre lo que pide la consigna en el punto 7: el subconjunto del
 protocolo SNMP implementado, el manejo de credenciales SSH y el diseño de la
 cola offline. También justifica dónde el proyecto se aparta del stack sugerido
 y separa lo verificado de lo pendiente. El detalle de cada prueba, con fechas y
 comandos, está en [TRASPASO.md](TRASPASO.md) y [VERIFICACION.md](VERIFICACION.md).
+
+Entrega:
+
+- Código fuente y backend: <https://github.com/Ovaleiva/tp6-network-diagnostics-suite>
+- APK: [Release v1.1.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.1.0)
+- Video demo: <https://youtu.be/6RPhjPZmcAA>
 
 ## 1. Estado por requisito
 
