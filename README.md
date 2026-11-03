@@ -14,6 +14,13 @@ El estado por requisito está en la sección 1 del
 [informe técnico](docs/INFORME_TECNICO.md); el detalle del trabajo, en
 [el traspaso](docs/TRASPASO.md).
 
+## Video demo
+
+[Video demo en YouTube](https://youtu.be/6RPhjPZmcAA) (3:51, no listado):
+descubrimiento con el barrido de rango, SNMP, PDF con foto y GPS, y
+sincronización al volver la red. El guion está en
+[docs/VIDEO_DEMO.md](docs/VIDEO_DEMO.md).
+
 ## Instalar el APK
 
 El APK release (4 ABI, unos 125 MB) se descarga de la
@@ -142,6 +149,6 @@ en Git. El keystore de debug de la plantilla es solo para desarrollo.
   ([Release v1.1.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.1.0)).
 - [x] Informe técnico de SNMP, credenciales SSH y outbox.
 - [x] Backend ejecutable y sincronización de extremo a extremo.
-- [x] Video demo (`tmp/video/demo-final.mp4`, no se versiona): descubrimiento
+- [x] Video demo ([YouTube](https://youtu.be/6RPhjPZmcAA)): descubrimiento
   de equipos reales de la LAN con el barrido, SNMP, PDF con foto y GPS, y
   sincronización al volver la red.

@@ -37,7 +37,10 @@ que pide un dispositivo real de la LAN en el video:
 
 Siguiente sesión:
 
-1. Entregar: repositorio público, Release v1.1.0 y `tmp/video/demo-final.mp4`.
+1. Entregar: repositorio público, Release v1.1.0 y el
+   [video en YouTube](https://youtu.be/6RPhjPZmcAA) (no listado). Se subió
+   `tmp/video/demo-final-youtube.mp4`, una copia de `demo-final.mp4`
+   recodificada a 320 kbps para que pese menos de 10 MB.
 2. Confirmar con la cátedra que la MAC no es exigible en Android 10+.
 
 ## Dónde quedamos (02/11, noche)
