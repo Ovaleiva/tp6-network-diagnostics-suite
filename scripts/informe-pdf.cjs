@@ -36,10 +36,10 @@ function escapeHtml(text) {
 }
 
 function buildHtml(markdown) {
-  // El título y la línea de fecha del Markdown pasan a la portada.
+  // El título y la línea de autor y fecha del Markdown pasan a la portada.
   const header =
-    /^# .*\n+Desarrollo de Aplicaciones Móviles 2026 · Fecha: (.*?)\.?\n/u;
-  const date = markdown.match(header)?.[1] ?? '';
+    /^# .*(?:\r?\n)+Desarrollo de Aplicaciones Móviles 2026 · (?:Autor: (.*?) · )?Fecha: (.*?)\.?\r?\n/u;
+  const [, author = '', date = ''] = markdown.match(header) ?? [];
   const renderer = new marked.Renderer();
   const renderCode = renderer.code.bind(renderer);
   renderer.code = (code, lang, escaped) =>
@@ -93,8 +93,8 @@ function buildHtml(markdown) {
   <h1>Network Diagnostics Suite</h1>
   <div class="sub">Informe técnico · TP6</div>
   <div class="meta">Subconjunto SNMP · Credenciales SSH · Cola offline<br>${escapeHtml(
-    date,
-  )}</div>
+    author,
+  )}<br>${escapeHtml(date)}</div>
 </section>
 ${body}
 <script src="mermaid.min.js"></script>
