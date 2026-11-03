@@ -15,11 +15,13 @@ El estado por requisito está en la sección 1 del
 
 ## Instalar el APK
 
-El APK release (4 ABI, unos 125 MB) no se versiona. Para generarlo, ver
-[Compilar](#compilar). Se instala con:
+El APK release (4 ABI, unos 125 MB) se descarga de la
+[Release v1.0.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.0.0);
+no se versiona en el repositorio. Para generarlo, ver [Compilar](#compilar).
+Se instala con:
 
 ```powershell
-adb install -r android/app/build/outputs/apk/release/app-release.apk
+adb install -r tp6-network-diagnostics-suite-v1.0.0.apk
 ```
 
 Está firmado con la clave debug de la plantilla, así que se instala encima de
@@ -135,7 +137,8 @@ en Git. El keystore de debug de la plantilla es solo para desarrollo.
 - [x] Código RF01–RF08 en el repositorio
   ([GitHub](https://github.com/Ovaleiva/tp6-network-diagnostics-suite)).
   RF01 parcial por falta de un teléfono y de equipos físicos.
-- [x] APK release con instrucciones de instalación (arriba).
+- [x] APK release con instrucciones de instalación
+  ([Release v1.0.0](https://github.com/Ovaleiva/tp6-network-diagnostics-suite/releases/tag/v1.0.0)).
 - [x] Informe técnico de SNMP, credenciales SSH y outbox.
 - [x] Backend ejecutable y sincronización de extremo a extremo.
 - [ ] Video: tramos grabados en el emulador (SNMP, PDF con foto y GPS,
