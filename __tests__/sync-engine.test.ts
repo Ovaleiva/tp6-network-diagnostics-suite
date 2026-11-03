@@ -222,6 +222,21 @@ maybe('sincronización contra el backend de laboratorio', () => {
     expect((await runSync(deps(repo, http()))).sent).toBe(0);
   });
 
+  it('un PDF regenerado de una revisión ya enviada se acepta como archivo nuevo', async () => {
+    const repo = await setup();
+    await seed(repo);
+    await runSync(deps(repo, http()));
+    // Otro contenido en el mismo reporte: la generación 2 se envía con otro fileId.
+    const regenerated = { ...report, generation: 2, localPdfUri: 'file:///reports/rep-inst-1-r1-nuevo.pdf' };
+    await repo.saveReportWithAction(regenerated, createOutboxAction('report.upload', report.id, 2, NOW));
+    expect(await runSync(deps(repo, http()))).toMatchObject({ sent: 1, rejected: 0, conflicts: 0 });
+    expect(backend.state.files['rep-inst-1-r1-g2']).toBeDefined();
+    expect(backend.state.entities['report.upload:rep-inst-1-r1']).toMatchObject({
+      revision: 2,
+      entity: { fileId: 'rep-inst-1-r1-g2' },
+    });
+  });
+
   it('si la app se cerró en pleno envío, reenviar no duplica', async () => {
     const repo = await setup();
     await seed(repo);

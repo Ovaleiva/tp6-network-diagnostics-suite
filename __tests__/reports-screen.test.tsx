@@ -85,16 +85,38 @@ test('genera el PDF y lo guarda con su acción report.upload', async () => {
   });
   expect(reporting.generate).toHaveBeenCalledWith(installation);
   expect(repository.saveReportWithAction).toHaveBeenCalledWith(
-    report(),
+    { ...report(), generation: 1 },
     expect.objectContaining({
       kind: 'report.upload',
       entityId: 'rep-inst-1-r2',
-      entityRevision: 2,
+      entityRevision: 1,
       state: 'pending',
     }),
   );
   expect(text()).toContain('PDF guardado en el dispositivo');
   expect(text()).toContain('PDF generado el');
+});
+
+test('regenerar la misma revisión sube la generación para que el backend la acepte', async () => {
+  await render([report({ generation: 1 })]);
+  await act(async () => {
+    await button('Generar PDF torre-norte rev. 2').props.onPress();
+  });
+  expect(repository.saveReportWithAction).toHaveBeenLastCalledWith(
+    { ...report(), generation: 2 },
+    expect.objectContaining({ entityId: 'rep-inst-1-r2', entityRevision: 2 }),
+  );
+});
+
+test('un reporte guardado antes de la generación continúa desde la revisión con que se envió', async () => {
+  await render([report()]);
+  await act(async () => {
+    await button('Generar PDF torre-norte rev. 2').props.onPress();
+  });
+  expect(repository.saveReportWithAction).toHaveBeenLastCalledWith(
+    { ...report(), generation: 3 },
+    expect.objectContaining({ entityRevision: 3 }),
+  );
 });
 
 test('abre el último PDF de la instalación', async () => {

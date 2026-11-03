@@ -57,6 +57,9 @@ export interface InstallationReport {
   installationId: EntityId;
   // Revisión de la instalación usada para el PDF; el reporte la documenta tal cual era.
   installationRevision: number;
+  // Veces que se generó el PDF de esa revisión; es la revisión que se sincroniza.
+  // Falta en los reportes guardados antes de agregar el campo.
+  generation?: number;
   localPdfUri: string;
   createdAt: IsoDate;
 }

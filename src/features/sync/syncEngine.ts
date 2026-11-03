@@ -1,4 +1,5 @@
 import type { OutboxAction } from '../../core/domain/models';
+import { reportFileId } from '../../core/sync/reportUpload';
 import type { LocalRepository, OutboxStore } from '../local-store/contracts';
 
 export type SendOutcome =
@@ -107,9 +108,10 @@ export async function prepareAction(
   const report = await repository.findReport(action.entityId);
   if (!report) throw new PermanentError('El reporte ya no existe en el teléfono.');
   const { localPdfUri, ...rest } = report;
+  const fileId = reportFileId(report);
   return {
-    payload: { ...base, entity: { ...rest, fileId: report.id } },
-    files: [{ fileId: report.id, contentType: 'application/pdf', localUri: localPdfUri }],
+    payload: { ...base, entity: { ...rest, fileId } },
+    files: [{ fileId, contentType: 'application/pdf', localUri: localPdfUri }],
   };
 }
 

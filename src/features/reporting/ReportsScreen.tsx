@@ -5,6 +5,7 @@ import type {
   InstallationReport,
 } from '../../core/domain/models';
 import { createOutboxAction } from '../../core/sync/outboxAction';
+import { nextReportGeneration } from '../../core/sync/reportUpload';
 import { Screen } from '../../shared/components/Screen';
 import { colors } from '../../shared/theme';
 import type { LocalRepository } from '../local-store/contracts';
@@ -67,15 +68,14 @@ export function ReportsScreen({ services }: Props) {
     setError('');
     setStatus('');
     try {
-      const report = await deps.reporting.generate(installation);
+      const generated = await deps.reporting.generate(installation);
+      const report = {
+        ...generated,
+        generation: nextReportGeneration(reports[installation.id], installation.revision),
+      };
       await deps.repository.saveReportWithAction(
         report,
-        createOutboxAction(
-          'report.upload',
-          report.id,
-          report.installationRevision,
-          new Date(),
-        ),
+        createOutboxAction('report.upload', report.id, report.generation, new Date()),
       );
       setStatus('PDF guardado en el dispositivo. Queda en cola para sincronizar.');
       await refresh();
