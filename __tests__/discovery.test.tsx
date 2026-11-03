@@ -37,11 +37,13 @@ jest.useFakeTimers();
 let app: ReactTestRenderer.ReactTestRenderer;
 const navigate = jest.fn();
 const repository = { saveDevices: jest.fn() };
+const tcpProbe = { probe: jest.fn(), cancel: jest.fn() };
 
 beforeEach(() => {
   jest.clearAllMocks();
   native.getNetworkInfo.mockResolvedValue(network);
   repository.saveDevices.mockResolvedValue(undefined);
+  tcpProbe.probe.mockResolvedValue([]);
 });
 afterEach(async () => {
   if (app) {
@@ -56,6 +58,7 @@ async function render() {
         navigation={{ navigate } as never}
         route={{ key: 'devices', name: 'Devices' }}
         repository={repository as never}
+        tcpProbe={tcpProbe}
       />,
     );
   });
@@ -215,4 +218,88 @@ test('una señal ya cancelada no inicia tráfico de descubrimiento', async () =>
     }),
   ).rejects.toThrow('cancelada');
   expect(native.discover).not.toHaveBeenCalled();
+});
+
+function input(label: string) {
+  return app.root.findAll(
+    node =>
+      node.props.accessibilityLabel === label &&
+      typeof node.props.onChangeText === 'function',
+  )[0]!;
+}
+
+test('el barrido de rango encuentra un equipo real por sus puertos y lo guarda', async () => {
+  tcpProbe.probe.mockImplementation(async (ip: string) =>
+    ip === '192.168.1.1' ? [23, 80, 443] : [],
+  );
+  await render();
+  await act(async () => {
+    input('Rango a barrer').props.onChangeText('192.168.1.1-20');
+  });
+  await act(async () => {
+    await button('Barrer rango').props.onPress();
+  });
+  expect(tcpProbe.probe).toHaveBeenCalledTimes(20);
+  expect(contents()).toContain('1 equipo(s) con puertos abiertos');
+  expect(contents()).toContain('HTTP (80)');
+  expect(contents()).toContain('MAC: no disponible en Android 10+');
+  expect(repository.saveDevices).toHaveBeenCalledWith([
+    expect.objectContaining({ ip: '192.168.1.1', discoveryMethod: 'tcp-probe' }),
+  ]);
+  await act(async () => {
+    button('Ver equipo 192.168.1.1').props.onPress();
+  });
+  expect(navigate).toHaveBeenCalledWith(
+    'DeviceDetails',
+    expect.objectContaining({ device: expect.objectContaining({ ip: '192.168.1.1' }) }),
+  );
+});
+
+test('sugiere la /24 del teléfono y rechaza un rango público sin sondear', async () => {
+  await render();
+  expect(input('Rango a barrer').props.value).toBe('10.0.2.1-254');
+  await act(async () => {
+    input('Rango a barrer').props.onChangeText('8.8.8.1-10');
+  });
+  await act(async () => {
+    await button('Barrer rango').props.onPress();
+  });
+  expect(tcpProbe.probe).not.toHaveBeenCalled();
+  expect(contents()).toContain('solo recorre redes privadas');
+});
+
+test('el barrido se puede cancelar y no corre junto con la búsqueda mDNS', async () => {
+  const pending: Array<(error: Error) => void> = [];
+  tcpProbe.probe.mockImplementation(
+    () => new Promise((_, reject) => pending.push(reject)),
+  );
+  tcpProbe.cancel.mockImplementation(() => {
+    pending.splice(0).forEach(reject => reject(new Error('Barrido cancelado.')));
+  });
+  await render();
+  await act(async () => {
+    button('Barrer rango').props.onPress();
+  });
+  expect(tcpProbe.probe).toHaveBeenCalledTimes(32);
+  expect(contents()).toContain('"Revisadas ","0"," de ","254"');
+  expect(button('Buscar equipos').props.disabled).toBe(true);
+  await act(async () => {
+    button('Cancelar barrido').props.onPress();
+  });
+  expect(tcpProbe.cancel).toHaveBeenCalledTimes(1);
+  expect(contents()).toContain('Barrido cancelado.');
+  expect(button('Barrer rango').props.disabled).toBe(false);
+  expect(repository.saveDevices).not.toHaveBeenCalled();
+});
+
+test('al salir durante un barrido cancela las sondas nativas', async () => {
+  tcpProbe.probe.mockImplementation(() => new Promise(() => {}));
+  await render();
+  await act(async () => {
+    button('Barrer rango').props.onPress();
+  });
+  await act(async () => {
+    app.unmount();
+  });
+  expect(tcpProbe.cancel).toHaveBeenCalledTimes(1);
 });

@@ -18,7 +18,7 @@ const modules: ReadonlyArray<{
     title: 'Equipos en la red',
     description: 'Descubrimiento de dispositivos en la LAN.',
     requirement: 'RF-01',
-    status: 'BÚSQUEDA mDNS · RF-01 PARCIAL',
+    status: 'mDNS Y BARRIDO TCP · SIN MAC',
   },
   {
     route: 'Diagnostics',
@@ -81,11 +81,11 @@ export function HomeScreen({
           Validación en laboratorio · RF01 a RF08
         </Text>
         <Text style={styles.description}>
-          Equipos en la red busca servicios mDNS, Diagnóstico consulta SNMP y
-          SSH, Identificar lee el QR o las barras y trae la ficha técnica,
-          Instalación registra fotos, GPS y notas sin conexión, Reportes genera
-          su PDF, Historial los consulta sin red y Sincronización los envía al
-          backend cuando responde. Falta probar con equipos reales de la LAN.
+          Equipos en la red busca servicios mDNS y barre un rango de la LAN,
+          Diagnóstico consulta SNMP y SSH, Identificar lee el QR o las barras y
+          trae la ficha técnica, Instalación registra fotos, GPS y notas sin
+          conexión, Reportes genera su PDF, Historial los consulta sin red y
+          Sincronización los envía al backend cuando responde.
         </Text>
       </View>
       {modules.map(module => (

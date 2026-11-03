@@ -22,14 +22,16 @@ export function DeviceDetailsScreen({
         Hostname: {device.hostname || 'no disponible'}
       </Text>
       <Text style={styles.body}>
-        MAC: {device.mac || 'no disponible por mDNS'}
+        MAC: {device.mac || 'no disponible en Android 10+'}
       </Text>
       <Text style={styles.body}>
         Detectado: {new Date(device.discoveredAt).toLocaleString()}
       </Text>
       <Text style={styles.body}>
-        La detección confirma un anuncio mDNS; todavía no se verificó el estado
-        del servicio con SNMP ni SSH.
+        {device.discoveryMethod === 'tcp-probe'
+          ? 'El barrido confirmó que el equipo acepta conexiones en estos puertos;'
+          : 'La detección confirma un anuncio mDNS;'}{' '}
+        todavía no se verificó el estado del servicio con SNMP ni SSH.
       </Text>
       <Pressable
         accessibilityRole="button"

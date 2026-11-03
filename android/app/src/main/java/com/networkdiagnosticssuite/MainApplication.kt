@@ -18,6 +18,7 @@ class MainApplication : Application(), ReactApplication {
           add(UdpTransportPackage())
           add(PdfViewerPackage())
           add(SshClientPackage())
+          add(TcpProbePackage())
         },
     )
   }
